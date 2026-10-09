@@ -5,6 +5,7 @@
 
 package com.metrolist.music.ui.screens.library
 
+import com.metrolist.music.ui.component.GlassFilterChip
 import android.content.Intent
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -177,9 +178,9 @@ fun LibraryPodcastsScreen(
     ) {
         // Chip row header — same pattern as LibrarySongsScreen
         val chipsHeader = @Composable {
-            Row {
+            Row(modifier = Modifier.padding(top = 14.dp)) {
                 Spacer(Modifier.width(12.dp))
-                FilterChip(
+                GlassFilterChip(
                     label = { Text(stringResource(R.string.filter_podcasts)) },
                     selected = true,
                     colors =

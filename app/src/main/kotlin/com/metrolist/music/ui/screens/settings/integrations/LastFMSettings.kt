@@ -5,6 +5,7 @@
 
 package com.metrolist.music.ui.screens.settings.integrations
 
+import com.metrolist.music.ui.component.GlassOutlinedButton
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -302,14 +303,14 @@ fun LastFMSettings(
                     },
                     trailingContent = {
                         if (isLoggedIn) {
-                            OutlinedButton(onClick = {
+                            GlassOutlinedButton(onClick = {
                                 lastfmSession = ""
                                 lastfmUsername = ""
                             }) {
                                 Text(stringResource(R.string.action_logout))
                             }
                         } else {
-                            OutlinedButton(onClick = { showLoginDialog = true }) {
+                            GlassOutlinedButton(onClick = { showLoginDialog = true }) {
                                 Text(stringResource(R.string.action_login))
                             }
                         }

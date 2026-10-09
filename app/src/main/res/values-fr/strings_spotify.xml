@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="import_from_spotify">Importer depuis Spotify</string>
+    <string name="playlist_import_error">Échec de l\'importation : %1$s</string>
+    <string name="spotify_playlist_url">URL ou ID de la playlist Spotify</string>
+    <string name="spotify_import_searching">Recherche des titres sur YouTube Music…</string>
+    <string name="spotify_import_done">Importation terminée : %1$d titres trouvés sur %2$d</string>
+    <string name="spotify_import_invalid_url">URL Spotify invalide</string>
+    <string name="spotify_hub_title">Spotify</string>
+    <string name="spotify_import_card_desc">Importe tes playlists avec un lien</string>
+    <string name="spotify_jam_card_title">Rejoindre une Jam</string>
+    <string name="spotify_jam_card_desc">Colle le lien de la Jam d\'un ami</string>
+    <string name="spotify_jam_dialog_title">Rejoindre une Jam Spotify</string>
+    <string name="spotify_jam_hint">Lien de la Jam</string>
+    <string name="spotify_jam_help">Colle le lien partagé par l\'hôte. La file est enregistrée comme playlist et recherchée sur YouTube.</string>
+    <string name="spotify_jam_join">Rejoindre</string>
+    <string name="spotify_jam_done">Jam enregistrée : %1$d titres</string>
+    <string name="spotify_jam_hidden">Cette Jam n\'expose pas sa file sans connexion Spotify. Demande à l\'hôte de partager la file comme playlist et importe-la ici.</string>
+</resources>

@@ -112,6 +112,7 @@ import com.metrolist.music.constants.ListThumbnailSize
 import com.metrolist.music.constants.SmallGridThumbnailHeight
 import com.metrolist.music.constants.SwipeToSongKey
 import com.metrolist.music.constants.ThumbnailCornerRadius
+import com.metrolist.music.constants.LocalThumbnailCornerRadius
 import com.metrolist.music.db.entities.Album
 import com.metrolist.music.db.entities.Artist
 import com.metrolist.music.db.entities.ArtistEntity
@@ -259,23 +260,24 @@ inline fun ListItem(
     isActive: Boolean = false,
     isAvailable: Boolean = true,
 ) {
+    val modifier = Modifier.pressScale(0.975f).then(modifier)
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = if (isActive) {
             modifier // playing highlight
                 .height(ListItemHeight)
                 .padding(horizontal = 8.dp)
-                .clip(RoundedCornerShape(8.dp))
+                .clip(RoundedCornerShape(18.dp))
                 .background(
                     color = // selected active
                         if (isSelected == true) MaterialTheme.colorScheme.primary.copy(alpha = 0.4f)
-                        else MaterialTheme.colorScheme.secondaryContainer
+                        else MaterialTheme.colorScheme.primary.copy(alpha = 0.22f)
                 )
         } else if (isSelected == true) {
             modifier // inactive selected
                 .height(ListItemHeight)
                 .padding(horizontal = 8.dp)
-                .clip(RoundedCornerShape(8.dp))
+                .clip(RoundedCornerShape(18.dp))
                 .background(color = MaterialTheme.colorScheme.inversePrimary.copy(alpha = 0.4f))
         } else {
             modifier // default
@@ -295,7 +297,7 @@ inline fun ListItem(
                         .align(Alignment.Center)
                         .background(
                             Color.Black.copy(alpha = 0.25f),
-                            RoundedCornerShape(ThumbnailCornerRadius)
+                            RoundedCornerShape(LocalThumbnailCornerRadius.current)
                         )
                 ) {
                     Icon(
@@ -408,6 +410,7 @@ fun GridItem(
     fillMaxWidth: Boolean = false,
 ) {
     val gridHeight = currentGridThumbnailHeight()
+    val modifier = Modifier.pressScale(0.96f).then(modifier)
     Column(
         modifier = if (fillMaxWidth) {
             modifier
@@ -551,7 +554,7 @@ fun SongListItem(
                      isSelected = isSelected,
                      isActive = isActive,
                      isPlaying = isPlaying,
-                     shape = RoundedCornerShape(ThumbnailCornerRadius),
+                     shape = RoundedCornerShape(LocalThumbnailCornerRadius.current),
                      modifier = Modifier.size(ListThumbnailSize)
                  )
              },
@@ -629,7 +632,7 @@ fun SongGridItem(
             thumbnailUrl = song.song.thumbnailUrl,
             isActive = isActive,
             isPlaying = isPlaying,
-            shape = RoundedCornerShape(ThumbnailCornerRadius),
+            shape = RoundedCornerShape(LocalThumbnailCornerRadius.current),
             modifier = Modifier.size(gridHeight)
         )
         if (!isActive) {
@@ -777,7 +780,7 @@ fun AlbumListItem(
             thumbnailUrl = album.album.thumbnailUrl,
             isActive = isActive,
             isPlaying = isPlaying,
-            shape = RoundedCornerShape(ThumbnailCornerRadius),
+            shape = RoundedCornerShape(LocalThumbnailCornerRadius.current),
             modifier = Modifier.size(ListThumbnailSize)
         )
     },
@@ -857,7 +860,7 @@ fun AlbumGridItem(
             thumbnailUrl = album.album.thumbnailUrl,
             isActive = isActive,
             isPlaying = isPlaying,
-            shape = RoundedCornerShape(ThumbnailCornerRadius),
+            shape = RoundedCornerShape(LocalThumbnailCornerRadius.current),
         )
 
         AlbumPlayButton(
@@ -937,26 +940,19 @@ fun PlaylistListItem(
             thumbnails = playlist.thumbnails,
             size = ListThumbnailSize,
             placeHolder = {
-                val painter = when (playlist.playlist.name) {
-                    stringResource(R.string.liked) -> R.drawable.favorite_border
-                    stringResource(R.string.offline) -> R.drawable.offline
-                    stringResource(R.string.cached_playlist) -> R.drawable.cached
-                    // R.drawable.backup as placeholder
-                    stringResource(R.string.uploaded_playlist) -> R.drawable.backup
-                    else -> if (autoPlaylist) R.drawable.trending_up else R.drawable.queue_music
-                }
-                Icon(
-                    painter = painterResource(painter),
-                    contentDescription = null,
-                    tint = LocalContentColor.current.copy(alpha = 0.8f),
-                    modifier = Modifier.size(ListThumbnailSize / 2)
+                val (iconRes, iconTint) = playlistGlassSpec(playlist.playlist.name, autoPlaylist)
+                GlassPlaylistIcon(
+                    iconRes = iconRes,
+                    tint = iconTint,
+                    iconSize = ListThumbnailSize / 2,
+                    modifier = Modifier.fillMaxSize(),
                 )
             },
-            shape = RoundedCornerShape(ThumbnailCornerRadius)
+            shape = RoundedCornerShape(LocalThumbnailCornerRadius.current)
         )
     },
     trailingContent = trailingContent,
-    modifier = modifier
+    modifier = modifier.padding(horizontal = 14.dp, vertical = 6.dp).glassCard(20.dp)
 )
 
 @Composable
@@ -1037,31 +1033,19 @@ fun PlaylistGridItem(
             thumbnails = playlist.thumbnails,
             size = width,
             placeHolder = {
-                val painter = when (playlist.playlist.name) {
-                    stringResource(R.string.liked) -> R.drawable.favorite_border
-                    stringResource(R.string.offline) -> R.drawable.offline
-                    stringResource(R.string.cached_playlist) -> R.drawable.cached
-                    // R.drawable.backup as placeholder
-                    stringResource(R.string.uploaded_playlist) -> R.drawable.backup
-                    else -> if (autoPlaylist) R.drawable.trending_up else R.drawable.queue_music
-                }
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    Icon(
-                        painter = painterResource(painter),
-                        contentDescription = null,
-                        tint = LocalContentColor.current.copy(alpha = 0.8f),
-                        modifier = Modifier.size(width / 2)
-                    )
-                }
+                val (iconRes, iconTint) = playlistGlassSpec(playlist.playlist.name, autoPlaylist)
+                GlassPlaylistIcon(
+                    iconRes = iconRes,
+                    tint = iconTint,
+                    iconSize = width / 2,
+                    modifier = Modifier.fillMaxSize(),
+                )
             },
-            shape = RoundedCornerShape(ThumbnailCornerRadius)
+            shape = RoundedCornerShape(LocalThumbnailCornerRadius.current)
         )
     },
     fillMaxWidth = fillMaxWidth,
-    modifier = modifier
+    modifier = modifier.padding(6.dp).glassCard(22.dp)
 )
 
 @Composable
@@ -1106,7 +1090,7 @@ fun MediaMetadataListItem(
                 isSelected = isSelected,
                 isActive = isActive,
                 isPlaying = isPlaying,
-                shape = RoundedCornerShape(ThumbnailCornerRadius),
+                shape = RoundedCornerShape(LocalThumbnailCornerRadius.current),
                 modifier = Modifier.size(ListThumbnailSize)
             )
         },
@@ -1207,7 +1191,7 @@ fun YouTubeListItem(
                     isSelected = isSelected,
                     isActive = isActive,
                     isPlaying = isPlaying,
-                    shape = if (item is ArtistItem) CircleShape else RoundedCornerShape(ThumbnailCornerRadius),
+                    shape = if (item is ArtistItem) CircleShape else RoundedCornerShape(LocalThumbnailCornerRadius.current),
                     modifier = Modifier.size(ListThumbnailSize)
                 )
             },
@@ -1306,7 +1290,7 @@ fun YouTubeGridItem(
             thumbnailUrl = item.thumbnail,
             isActive = isActive,
             isPlaying = isPlaying,
-            shape = if (item is ArtistItem) CircleShape else RoundedCornerShape(ThumbnailCornerRadius),
+            shape = if (item is ArtistItem) CircleShape else RoundedCornerShape(LocalThumbnailCornerRadius.current),
         )
 
         if (item is SongItem && !isActive) {
@@ -1372,7 +1356,7 @@ fun LocalSongsGrid(
             thumbnailUrl = thumbnailUrl,
             isActive = isActive,
             isPlaying = isPlaying,
-            shape = RoundedCornerShape(ThumbnailCornerRadius),
+            shape = RoundedCornerShape(LocalThumbnailCornerRadius.current),
             modifier = if (fillMaxWidth) Modifier.fillMaxWidth() else Modifier,
             showCenterPlay = true,
             playButtonVisible = false
@@ -1456,7 +1440,7 @@ fun LocalAlbumsGrid(
             thumbnailUrl = thumbnailUrl,
             isActive = isActive,
             isPlaying = isPlaying,
-            shape = RoundedCornerShape(ThumbnailCornerRadius),
+            shape = RoundedCornerShape(LocalThumbnailCornerRadius.current),
             modifier = if (fillMaxWidth) Modifier.fillMaxWidth() else Modifier,
             showCenterPlay = false,
             playButtonVisible = true
@@ -1976,3 +1960,15 @@ object Icon {
         )
     }
 }
+
+
+@Composable
+private fun playlistGlassSpec(name: String, autoPlaylist: Boolean): Pair<Int, Color> =
+    when {
+        name == stringResource(R.string.liked) -> R.drawable.favorite to Color(0xFFFF375F)
+        name == stringResource(R.string.offline) -> R.drawable.download to Color(0xFF30D158)
+        name == stringResource(R.string.cached_playlist) -> R.drawable.cached to Color(0xFF64D2FF)
+        name == stringResource(R.string.uploaded_playlist) -> R.drawable.upload to Color(0xFF0A84FF)
+        autoPlaylist -> R.drawable.trending_up to Color(0xFFFF9F0A)
+        else -> R.drawable.queue_music to Color(0xFFBF5AF2)
+    }

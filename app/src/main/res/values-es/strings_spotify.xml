@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="import_from_spotify">Importar desde Spotify</string>
+    <string name="playlist_import_error">Error al importar: %1$s</string>
+    <string name="spotify_playlist_url">URL o ID de la playlist de Spotify</string>
+    <string name="spotify_import_searching">Buscando canciones en YouTube Music…</string>
+    <string name="spotify_import_done">Importación terminada: %1$d de %2$d canciones encontradas</string>
+    <string name="spotify_import_invalid_url">URL de Spotify no válida</string>
+</resources>

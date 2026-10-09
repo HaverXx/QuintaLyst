@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="import_from_spotify">الاستيراد من Spotify</string>
+    <string name="playlist_import_error">فشل الاستيراد: %1$s</string>
+    <string name="spotify_playlist_url">رابط أو معرّف قائمة تشغيل Spotify</string>
+    <string name="spotify_import_searching">جارٍ البحث عن الأغاني في YouTube Music…</string>
+    <string name="spotify_import_done">اكتمل الاستيراد: تم العثور على %1$d من %2$d أغنية</string>
+    <string name="spotify_import_invalid_url">رابط Spotify غير صالح</string>
+    <string name="spotify_hub_title">Spotify</string>
+    <string name="spotify_import_card_desc">أحضر قوائم التشغيل الخاصة بك برابط</string>
+    <string name="spotify_jam_card_title">الانضمام إلى Jam</string>
+    <string name="spotify_jam_card_desc">الصق رابط Jam الخاص بصديق</string>
+    <string name="spotify_jam_dialog_title">الانضمام إلى Jam على Spotify</string>
+    <string name="spotify_jam_hint">رابط Jam</string>
+    <string name="spotify_jam_help">الصق الرابط الذي شاركه المضيف. سيتم حفظ قائمة الانتظار كقائمة تشغيل والبحث عنها في YouTube.</string>
+    <string name="spotify_jam_join">انضمام</string>
+    <string name="spotify_jam_done">تم حفظ Jam: %1$d أغنية</string>
+    <string name="spotify_jam_hidden">لا تعرض هذه الـ Jam قائمة الانتظار دون تسجيل الدخول إلى Spotify. اطلب من المضيف مشاركة القائمة كقائمة تشغيل واستوردها هنا.</string>
+</resources>

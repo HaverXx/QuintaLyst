@@ -74,9 +74,9 @@ fun SettingsScreen(
             )
         )
 
-        // User Interface Section
+        // Personalización
         Material3SettingsGroup(
-            title = stringResource(R.string.settings_section_ui),
+            title = stringResource(R.string.settings_group_personalize),
             items = listOf(
                 Material3SettingsItem(
                     icon = painterResource(R.drawable.palette),
@@ -88,63 +88,69 @@ fun SettingsScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Player & Content Section (moved up and combined with content)
+        // Escucha
         Material3SettingsGroup(
-            title = stringResource(R.string.settings_section_player_content),
-            items = listOf(
-                Material3SettingsItem(
-                    icon = painterResource(R.drawable.play),
-                    title = { Text(stringResource(R.string.player_and_audio)) },
-                    onClick = { navController.navigate("settings/player") }
-                ),
-                Material3SettingsItem(
-                    icon = painterResource(R.drawable.language),
-                    title = { Text(stringResource(R.string.content)) },
-                    onClick = { navController.navigate("settings/content") }
-                ),
-                Material3SettingsItem(
-                    icon = painterResource(R.drawable.translate),
-                    title = { Text(stringResource(R.string.ai_lyrics_translation)) },
-                    onClick = { navController.navigate("settings/ai") }
-                )
-            )
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Android Auto Section — only shown if Android Auto is installed
-        if (hasAndroidAuto) {
-            Material3SettingsGroup(
-                title = "Android Auto",
-                items = listOf(
+            title = stringResource(R.string.settings_group_listening),
+            items = buildList {
+                add(
                     Material3SettingsItem(
-                        icon = painterResource(R.drawable.ic_android_auto),
-                        title = { Text(stringResource(R.string.android_auto)) },
-                        onClick = { navController.navigate("settings/android_auto") }
+                        icon = painterResource(R.drawable.play),
+                        title = { Text(stringResource(R.string.player_and_audio)) },
+                        onClick = { navController.navigate("settings/player") }
                     )
                 )
-            )
+                add(
+                    Material3SettingsItem(
+                        icon = painterResource(R.drawable.queue_music),
+                        title = { Text(stringResource(R.string.playlists)) },
+                        onClick = { navController.navigate("settings/playlists") }
+                    )
+                )
+                add(
+                    Material3SettingsItem(
+                        icon = painterResource(R.drawable.language),
+                        title = { Text(stringResource(R.string.content)) },
+                        onClick = { navController.navigate("settings/content") }
+                    )
+                )
+                add(
+                    Material3SettingsItem(
+                        icon = painterResource(R.drawable.translate),
+                        title = { Text(stringResource(R.string.ai_lyrics_translation)) },
+                        onClick = { navController.navigate("settings/ai") }
+                    )
+                )
+                if (hasAndroidAuto) {
+                    add(
+                        Material3SettingsItem(
+                            icon = painterResource(R.drawable.ic_android_auto),
+                            title = { Text(stringResource(R.string.android_auto)) },
+                            onClick = { navController.navigate("settings/android_auto") }
+                        )
+                    )
+                }
+            }
+        )
 
-            Spacer(modifier = Modifier.height(16.dp))
-        }
-        
-        // Privacy & Security Section
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Conexiones
         Material3SettingsGroup(
-            title = stringResource(R.string.settings_section_privacy),
+            title = stringResource(R.string.settings_group_connections),
             items = listOf(
                 Material3SettingsItem(
-                    icon = painterResource(R.drawable.security),
-                    title = { Text(stringResource(R.string.privacy)) },
-                    onClick = { navController.navigate("settings/privacy") }
+                    icon = painterResource(R.drawable.integration),
+                    title = { Text(stringResource(R.string.integrations)) },
+                    onClick = { navController.navigate("settings/integrations") }
                 )
             )
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Storage & Data Section
+        // Biblioteca y datos
         Material3SettingsGroup(
-            title = stringResource(R.string.settings_section_storage),
+            title = stringResource(R.string.settings_group_library_data),
             items = listOf(
                 Material3SettingsItem(
                     icon = painterResource(R.drawable.storage),
@@ -161,9 +167,23 @@ fun SettingsScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        // Privacidad
+        Material3SettingsGroup(
+            title = stringResource(R.string.settings_group_privacy),
+            items = listOf(
+                Material3SettingsItem(
+                    icon = painterResource(R.drawable.security),
+                    title = { Text(stringResource(R.string.privacy)) },
+                    onClick = { navController.navigate("settings/privacy") }
+                )
+            )
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
         // System & About Section
         Material3SettingsGroup(
-            title = stringResource(R.string.settings_section_system),
+            title = stringResource(R.string.settings_group_about),
             items = buildList {
                 if (isAndroid12OrLater) {
                     add(

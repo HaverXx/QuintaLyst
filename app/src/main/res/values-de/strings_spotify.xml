@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="import_from_spotify">Von Spotify importieren</string>
+    <string name="playlist_import_error">Import fehlgeschlagen: %1$s</string>
+    <string name="spotify_playlist_url">Spotify-Playlist-URL oder -ID</string>
+    <string name="spotify_import_searching">Songs werden auf YouTube Music gesucht…</string>
+    <string name="spotify_import_done">Import abgeschlossen: %1$d von %2$d Songs gefunden</string>
+    <string name="spotify_import_invalid_url">Ungültige Spotify-URL</string>
+    <string name="spotify_hub_title">Spotify</string>
+    <string name="spotify_import_card_desc">Hol deine Playlists per Link</string>
+    <string name="spotify_jam_card_title">Jam beitreten</string>
+    <string name="spotify_jam_card_desc">Füge den Jam-Link eines Freundes ein</string>
+    <string name="spotify_jam_dialog_title">Einer Spotify-Jam beitreten</string>
+    <string name="spotify_jam_hint">Jam-Link</string>
+    <string name="spotify_jam_help">Füge den vom Host geteilten Link ein. Die Warteschlange wird als Playlist gespeichert und auf YouTube gesucht.</string>
+    <string name="spotify_jam_join">Beitreten</string>
+    <string name="spotify_jam_done">Jam gespeichert: %1$d Songs</string>
+    <string name="spotify_jam_hidden">Diese Jam gibt ihre Warteschlange ohne Spotify-Login nicht preis. Bitte den Host, die Warteschlange als Playlist zu teilen, und importiere sie hier.</string>
+</resources>

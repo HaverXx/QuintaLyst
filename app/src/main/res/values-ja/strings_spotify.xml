@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="import_from_spotify">Spotifyからインポート</string>
+    <string name="playlist_import_error">インポートに失敗しました: %1$s</string>
+    <string name="spotify_playlist_url">SpotifyプレイリストのURLまたはID</string>
+    <string name="spotify_import_searching">YouTube Musicで曲を検索中…</string>
+    <string name="spotify_import_done">インポート完了: %2$d曲中%1$d曲が見つかりました</string>
+    <string name="spotify_import_invalid_url">無効なSpotify URL</string>
+    <string name="spotify_hub_title">Spotify</string>
+    <string name="spotify_import_card_desc">リンクでプレイリストを取り込む</string>
+    <string name="spotify_jam_card_title">Jamに参加</string>
+    <string name="spotify_jam_card_desc">友だちのJamのリンクを貼り付け</string>
+    <string name="spotify_jam_dialog_title">Spotify Jamに参加</string>
+    <string name="spotify_jam_hint">Jamのリンク</string>
+    <string name="spotify_jam_help">ホストが共有したリンクを貼り付けてください。キューはプレイリストとして保存され、YouTubeで検索されます。</string>
+    <string name="spotify_jam_join">参加</string>
+    <string name="spotify_jam_done">Jamを保存しました: %1$d曲</string>
+    <string name="spotify_jam_hidden">このJamはSpotifyにログインしないとキューを公開しません。ホストにキューをプレイリストとして共有してもらい、ここでインポートしてください。</string>
+</resources>

@@ -6,6 +6,7 @@
 package com.metrolist.music.ui.component
 
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.ui.draw.clip
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
@@ -67,17 +68,18 @@ private fun NewActionButton(
         }
     }
 
-    Card(
+    Box(
         modifier =
             modifier
+                .liquidGlass(
+                    cornerRadius = 22.dp,
+                    fallbackColor = animatedBackground,
+                    tint = animatedBackground.copy(alpha = 0.16f),
+                    refraction = 8.dp,
+                    bezel = 12.dp,
+                )
+                .clip(RoundedCornerShape(22.dp))
                 .clickable(enabled = enabled) { performAction = true },
-        colors =
-            CardDefaults.cardColors(
-                containerColor = animatedBackground,
-            ),
-        shape = RoundedCornerShape(16.dp),
-        elevation =
-            CardDefaults.cardElevation(),
     ) {
         Column(
             modifier =

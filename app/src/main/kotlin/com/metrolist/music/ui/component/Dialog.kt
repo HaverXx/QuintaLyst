@@ -5,10 +5,16 @@
 
 package com.metrolist.music.ui.component
 
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.TransformOrigin
+
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -150,13 +156,45 @@ fun AccountSettingsDialog(
                 dismissOnClickOutside = true,
             ),
     ) {
+        // Entrada con muelle (escala + deslizamiento + fundido) y salida suave; el fondo se desenfoca progresivamente.
+        val scope = androidx.compose.runtime.rememberCoroutineScope()
+        val shown = androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
+        androidx.compose.runtime.LaunchedEffect(Unit) { shown.value = true }
+        val progress =
+            androidx.compose.animation.core.animateFloatAsState(
+                targetValue = if (shown.value) 1f else 0f,
+                animationSpec = androidx.compose.animation.core.spring(dampingRatio = 0.72f, stiffness = 260f),
+                label = "accountPanel",
+            ).value
+        val close: () -> Unit = {
+            if (shown.value) {
+                shown.value = false
+                scope.launch {
+                    delay(220)
+                    onDismiss()
+                }
+            }
+        }
+        // Desenfoque real de lo que hay detrás de la ventana (Android 12+).
+        val dialogWindow = (androidx.compose.ui.platform.LocalView.current.parent as? androidx.compose.ui.window.DialogWindowProvider)?.window
+        androidx.compose.runtime.SideEffect {
+            try {
+                dialogWindow?.setDimAmount(0.22f * progress.coerceIn(0f, 1f))
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S && dialogWindow != null) {
+                    dialogWindow.addFlags(android.view.WindowManager.LayoutParams.FLAG_BLUR_BEHIND)
+                    dialogWindow.attributes = dialogWindow.attributes.also { it.blurBehindRadius = (96 * progress.coerceIn(0f, 1f)).toInt() }
+                }
+            } catch (e: Exception) {
+                // Sin desenfoque: el panel sigue siendo translúcido.
+            }
+        }
         Box(
             modifier =
                 Modifier
                     .fillMaxSize()
                     .pointerInput(Unit) {
                         detectTapGestures(
-                            onTap = { onDismiss() }
+                            onTap = { close() }
                         )
                     },
             contentAlignment = Alignment.TopCenter,
@@ -166,14 +204,23 @@ fun AccountSettingsDialog(
                     Modifier
                         .fillMaxWidth()
                         .padding(top = 72.dp, start = 16.dp, end = 16.dp)
-                        .clip(RoundedCornerShape(28.dp)),
+                        .graphicsLayer {
+                            val p = progress.coerceIn(0f, 1.1f)
+                            alpha = progress.coerceIn(0f, 1f)
+                            scaleX = 0.88f + 0.12f * p
+                            scaleY = 0.88f + 0.12f * p
+                            translationY = -48.dp.toPx() * (1f - p)
+                            transformOrigin = TransformOrigin(0.5f, 0f)
+                        }
+                        .frostedGlass(RoundedCornerShape(28.dp))
+                        .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.16f)),
                 shape = MaterialTheme.shapes.large,
-                color = MaterialTheme.colorScheme.surface,
-                tonalElevation = 8.dp,
+                color = androidx.compose.ui.graphics.Color.Transparent,
+                tonalElevation = 0.dp,
             ) {
                 AccountSettings(
                     navController = navController,
-                    onClose = onDismiss,
+                    onClose = close,
                     latestVersionName = latestVersionName,
                 )
             }

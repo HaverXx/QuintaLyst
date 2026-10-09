@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="import_from_spotify">Nhập từ Spotify</string>
+    <string name="playlist_import_error">Nhập thất bại: %1$s</string>
+    <string name="spotify_playlist_url">URL hoặc ID danh sách phát Spotify</string>
+    <string name="spotify_import_searching">Đang tìm bài hát trên YouTube Music…</string>
+    <string name="spotify_import_done">Đã nhập xong: tìm thấy %1$d trên %2$d bài hát</string>
+    <string name="spotify_import_invalid_url">URL Spotify không hợp lệ</string>
+    <string name="spotify_hub_title">Spotify</string>
+    <string name="spotify_import_card_desc">Mang danh sách phát của bạn bằng liên kết</string>
+    <string name="spotify_jam_card_title">Tham gia Jam</string>
+    <string name="spotify_jam_card_desc">Dán liên kết Jam của bạn bè</string>
+    <string name="spotify_jam_dialog_title">Tham gia Jam Spotify</string>
+    <string name="spotify_jam_hint">Liên kết Jam</string>
+    <string name="spotify_jam_help">Dán liên kết mà chủ phòng chia sẻ. Hàng chờ được lưu thành danh sách phát và tìm trên YouTube.</string>
+    <string name="spotify_jam_join">Tham gia</string>
+    <string name="spotify_jam_done">Đã lưu Jam: %1$d bài hát</string>
+    <string name="spotify_jam_hidden">Jam này không hiển thị hàng chờ nếu chưa đăng nhập Spotify. Hãy nhờ chủ phòng chia sẻ hàng chờ dưới dạng danh sách phát rồi nhập vào đây.</string>
+</resources>

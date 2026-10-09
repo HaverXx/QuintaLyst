@@ -224,6 +224,8 @@ class MetrolistWidgetManager @Inject constructor(
         views.setOnClickPendingIntent(R.id.widget_album_art, getOpenAppIntent())
         views.setOnClickPendingIntent(R.id.widget_play_pause_container, getPlayPauseIntent())
         views.setOnClickPendingIntent(R.id.widget_like_button, getLikeIntent())
+        views.setOnClickPendingIntent(R.id.widget_prev_button, getPreviousIntent())
+        views.setOnClickPendingIntent(R.id.widget_next_button, getNextIntent())
 
         return views
     }
@@ -436,6 +438,30 @@ class MetrolistWidgetManager @Inject constructor(
         return PendingIntent.getBroadcast(
             context,
             2,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+    }
+
+    private fun getNextIntent(): PendingIntent {
+        val intent = Intent(context, MusicWidgetReceiver::class.java).apply {
+            action = MusicWidgetReceiver.ACTION_NEXT
+        }
+        return PendingIntent.getBroadcast(
+            context,
+            4,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+    }
+
+    private fun getPreviousIntent(): PendingIntent {
+        val intent = Intent(context, MusicWidgetReceiver::class.java).apply {
+            action = MusicWidgetReceiver.ACTION_PREVIOUS
+        }
+        return PendingIntent.getBroadcast(
+            context,
+            5,
             intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )

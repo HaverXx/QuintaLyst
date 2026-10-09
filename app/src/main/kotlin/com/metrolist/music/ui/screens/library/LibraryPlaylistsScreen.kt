@@ -8,7 +8,12 @@ package com.metrolist.music.ui.screens.library
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import com.metrolist.music.ui.component.LiquidGlassButton
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.draw.shadow
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsetsSides
@@ -89,6 +94,7 @@ import com.metrolist.music.utils.rememberEnumPreference
 import com.metrolist.music.utils.rememberPreference
 import com.metrolist.music.viewmodels.LibraryPlaylistsViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.UUID
 
@@ -314,7 +320,107 @@ fun LibraryPlaylistsScreen(
         }
     }
 
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val database = com.metrolist.music.LocalDatabase.current
+
     var showCreatePlaylistDialog by rememberSaveable { mutableStateOf(false) }
+    var showActionMenu by rememberSaveable { mutableStateOf(false) }
+    var showSpotifyImportDialog by rememberSaveable { mutableStateOf(false) }
+
+    val importFileLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
+        contract = androidx.activity.result.contract.ActivityResultContracts.OpenDocument()
+    ) { uri ->
+        if (uri != null) {
+            coroutineScope.launch {
+                val result = com.metrolist.music.utils.PlaylistFileManager.importPlaylistFromFile(context, uri, database)
+                result.onSuccess { (entity, count) ->
+                    android.widget.Toast.makeText(
+                        context,
+                        context.getString(R.string.playlist_imported, count),
+                        android.widget.Toast.LENGTH_SHORT,
+                    ).show()
+                    navController.navigate("local_playlist/${entity.id}")
+                }.onFailure { e ->
+                    android.widget.Toast.makeText(
+                        context,
+                        context.getString(R.string.playlist_import_error, e.localizedMessage ?: "Error"),
+                        android.widget.Toast.LENGTH_LONG,
+                    ).show()
+                }
+            }
+        }
+    }
+
+    if (showActionMenu) {
+        com.metrolist.music.ui.component.DefaultDialog(
+            onDismiss = { showActionMenu = false },
+            title = { Text(stringResource(R.string.create_playlist)) },
+            buttons = {
+                androidx.compose.material3.TextButton(onClick = { showActionMenu = false }) {
+                    Text(stringResource(android.R.string.cancel))
+                }
+            },
+            content = {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                showActionMenu = false
+                                showCreatePlaylistDialog = true
+                            }
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    ) {
+                        Icon(painter = painterResource(R.drawable.add), contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                        Text(stringResource(R.string.create_playlist), style = MaterialTheme.typography.bodyLarge)
+                    }
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                showActionMenu = false
+                                importFileLauncher.launch(arrayOf("application/json", "audio/x-mpegurl", "text/plain", "*/*"))
+                            }
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    ) {
+                        Icon(painter = painterResource(R.drawable.upload), contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                        Text(stringResource(R.string.import_from_file), style = MaterialTheme.typography.bodyLarge)
+                    }
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                showActionMenu = false
+                                showSpotifyImportDialog = true
+                            }
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    ) {
+                        Icon(painter = painterResource(R.drawable.playlist_add), contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                        Text(stringResource(R.string.import_from_spotify), style = MaterialTheme.typography.bodyLarge)
+                    }
+                }
+            },
+        )
+    }
+
+    if (showSpotifyImportDialog) {
+        com.metrolist.music.ui.component.SpotifyImportDialog(
+            isVisible = showSpotifyImportDialog,
+            onDismiss = { showSpotifyImportDialog = false },
+            onSuccess = { _, _ -> },
+        )
+    }
 
     if (showCreatePlaylistDialog) {
         CreatePlaylistDialog(
@@ -541,8 +647,12 @@ fun LibraryPlaylistsScreen(
         }
 
         // Always visible + button (no scroll hiding)
-        FloatingActionButton(
-            onClick = { showCreatePlaylistDialog = true },
+        LiquidGlassButton(
+            onClick = { showActionMenu = true },
+            iconRes = R.drawable.add,
+            size = 62.dp,
+            iconSize = 30.dp,
+            isActive = true,
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .windowInsetsPadding(
@@ -550,11 +660,12 @@ fun LibraryPlaylistsScreen(
                         .only(WindowInsetsSides.Bottom + WindowInsetsSides.Horizontal)
                 )
                 .padding(16.dp)
-        ) {
-            Icon(
-                painter = painterResource(R.drawable.add),
-                contentDescription = stringResource(R.string.create_playlist),
-            )
-        }
+                .shadow(
+                    18.dp,
+                    CircleShape,
+                    ambientColor = MaterialTheme.colorScheme.primary,
+                    spotColor = MaterialTheme.colorScheme.primary,
+                ),
+        )
     }
 }

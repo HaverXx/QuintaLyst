@@ -5,6 +5,7 @@
 
 package com.metrolist.music.ui.screens.library
 
+import com.metrolist.music.ui.component.GlassFilterChip
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -111,9 +112,9 @@ fun LibraryAlbumsScreen(
     val hideExplicit by rememberPreference(key = HideExplicitKey, defaultValue = false)
 
     val filterContent = @Composable {
-        Row {
+        Row(modifier = Modifier.padding(top = 14.dp)) {
             Spacer(Modifier.width(12.dp))
-            FilterChip(
+            GlassFilterChip(
                 label = { Text(stringResource(R.string.albums)) },
                 selected = true,
                 colors = FilterChipDefaults.filterChipColors(containerColor = MaterialTheme.colorScheme.surface),

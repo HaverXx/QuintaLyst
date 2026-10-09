@@ -8,6 +8,7 @@ package com.metrolist.music.ui.component
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -31,6 +32,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.unit.dp
 
@@ -45,6 +47,14 @@ fun Material3SettingsGroup(
     items: List<Material3SettingsItem>,
     useLowContrast: Boolean = false
 ) {
+    val isDark = isSystemInDarkTheme()
+    val backdrop = LocalLiquidBackdrop.current
+    val fallbackColor = if (!useLowContrast) {
+        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+    } else {
+        MaterialTheme.colorScheme.surfaceContainerLow
+    }
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -62,29 +72,15 @@ fun Material3SettingsGroup(
         // Settings items
         Column(
             modifier = Modifier.fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(4.dp)
+            verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            items.forEachIndexed { index, item ->
-                val shape = when {
-                    items.size == 1 -> RoundedCornerShape(24.dp)
-                    index == 0 -> RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp, bottomStart = 6.dp, bottomEnd = 6.dp)
-                    index == items.size - 1 -> RoundedCornerShape(topStart = 6.dp, topEnd = 6.dp, bottomStart = 24.dp, bottomEnd = 24.dp)
-                    else -> RoundedCornerShape(6.dp)
-                }
-
-                Card(
+            items.forEach { item ->
+                Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .animateContentSize(),
-                    shape = shape,
-                    colors = CardDefaults.cardColors(
-                        containerColor = if (!useLowContrast) {
-                            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
-                        } else {
-                            MaterialTheme.colorScheme.surfaceContainerLow
-                        }
-                    ),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+                        .then(if (item.enabled && item.onClick != null) Modifier.pressScale(0.97f) else Modifier)
+                        .animateContentSize()
+                        .glassCard(24.dp)
                 ) {
                     Material3SettingsItemRow(item = item)
                 }
@@ -115,16 +111,10 @@ private fun Material3SettingsItemRow(
             item.leadingContent.invoke()
             Spacer(modifier = Modifier.width(16.dp))
         } else if (item.icon != null) {
-            Box(
-                modifier = Modifier
-                    .size(40.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(
-                        MaterialTheme.colorScheme.primary.copy(
-                            alpha = if (item.isHighlighted) 0.15f else 0.1f
-                        )
-                    ),
-                contentAlignment = Alignment.Center
+            GlassIconTile(
+                tint = MaterialTheme.colorScheme.primary,
+                strong = item.isHighlighted,
+                modifier = Modifier.size(40.dp),
             ) {
                 if (item.showBadge) {
                     BadgedBox(

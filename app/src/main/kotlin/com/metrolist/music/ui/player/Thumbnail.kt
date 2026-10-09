@@ -83,6 +83,8 @@ import com.metrolist.music.constants.SwipeThumbnailKey
 import com.metrolist.music.constants.ThumbnailCornerRadius
 import com.metrolist.music.listentogether.RoomRole
 import com.metrolist.music.ui.component.CastButton
+import com.metrolist.music.ui.component.LocalRetroStyle
+import com.metrolist.music.ui.component.RetroBoombox
 import com.metrolist.music.utils.rememberEnumPreference
 import com.metrolist.music.utils.rememberPreference
 import kotlinx.coroutines.delay
@@ -204,6 +206,10 @@ fun Thumbnail(
     isListenTogetherGuest: Boolean = false,
 ) {
     val playerConnection = LocalPlayerConnection.current ?: return
+    if (LocalRetroStyle.current) {
+        RetroBoombox(modifier = modifier)
+        return
+    }
     val context = LocalContext.current
     val layoutDirection = LocalLayoutDirection.current
 

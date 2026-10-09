@@ -61,25 +61,14 @@ fun IntegrationCard(
         // Settings items
         Column(
             modifier = Modifier.fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(4.dp)
+            verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            items.forEachIndexed { index, item ->
-                val shape = when {
-                    items.size == 1 -> RoundedCornerShape(24.dp)
-                    index == 0 -> RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp, bottomStart = 6.dp, bottomEnd = 6.dp)
-                    index == items.size - 1 -> RoundedCornerShape(topStart = 6.dp, topEnd = 6.dp, bottomStart = 24.dp, bottomEnd = 24.dp)
-                    else -> RoundedCornerShape(6.dp)
-                }
-
-                Card(
+            items.forEach { item ->
+                Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .animateContentSize(),
-                    shape = shape,
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
-                    ),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+                        .animateContentSize()
+                        .glassCard(24.dp)
                 ) {
                     IntegrationCardItemRow(item = item)
                 }
@@ -107,16 +96,10 @@ private fun IntegrationCardItemRow(
     ) {
         // Icon with background
         item.icon?.let { icon ->
-            Box(
-                modifier = Modifier
-                    .size(40.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(
-                        MaterialTheme.colorScheme.primary.copy(
-                            alpha = if (item.isHighlighted) 0.15f else 0.1f
-                        )
-                    ),
-                contentAlignment = Alignment.Center
+            GlassIconTile(
+                tint = MaterialTheme.colorScheme.primary,
+                strong = item.isHighlighted,
+                modifier = Modifier.size(40.dp),
             ) {
                 if (item.showBadge) {
                     BadgedBox(

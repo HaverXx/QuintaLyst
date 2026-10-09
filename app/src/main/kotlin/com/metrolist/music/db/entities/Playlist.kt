@@ -34,7 +34,7 @@ data class Playlist(
     override val title: String
         get() = playlist.name
     override val thumbnailUrl: String?
-        get() = null
+        get() = playlist.thumbnailUrl ?: thumbnails.firstOrNull()
     
     val thumbnails: List<String>
         get() {
@@ -42,4 +42,7 @@ data class Playlist(
                 listOf(playlist.thumbnailUrl)
             else songThumbnails.filterNotNull()
         }
+
+    val hasCustomThumbnail: Boolean
+        get() = isCustomPlaylistThumbnail(playlist.thumbnailUrl)
 }

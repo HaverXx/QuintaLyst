@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="import_from_spotify">Impor dari Spotify</string>
+    <string name="playlist_import_error">Impor gagal: %1$s</string>
+    <string name="spotify_playlist_url">URL atau ID playlist Spotify</string>
+    <string name="spotify_import_searching">Mencari lagu di YouTube Music…</string>
+    <string name="spotify_import_done">Impor selesai: %1$d dari %2$d lagu ditemukan</string>
+    <string name="spotify_import_invalid_url">URL Spotify tidak valid</string>
+    <string name="spotify_hub_title">Spotify</string>
+    <string name="spotify_import_card_desc">Bawa playlist Anda dengan tautan</string>
+    <string name="spotify_jam_card_title">Gabung ke Jam</string>
+    <string name="spotify_jam_card_desc">Tempel tautan Jam teman</string>
+    <string name="spotify_jam_dialog_title">Gabung ke Spotify Jam</string>
+    <string name="spotify_jam_hint">Tautan Jam</string>
+    <string name="spotify_jam_help">Tempel tautan yang dibagikan host. Antrean disimpan sebagai playlist dan dicari di YouTube.</string>
+    <string name="spotify_jam_join">Gabung</string>
+    <string name="spotify_jam_done">Jam disimpan: %1$d lagu</string>
+    <string name="spotify_jam_hidden">Jam ini tidak menampilkan antreannya tanpa login Spotify. Minta host membagikan antrean sebagai playlist lalu impor di sini.</string>
+</resources>

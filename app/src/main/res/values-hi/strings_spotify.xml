@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="import_from_spotify">Spotify से इंपोर्ट करें</string>
+    <string name="playlist_import_error">इंपोर्ट विफल: %1$s</string>
+    <string name="spotify_playlist_url">Spotify प्लेलिस्ट URL या ID</string>
+    <string name="spotify_import_searching">YouTube Music पर गाने खोजे जा रहे हैं…</string>
+    <string name="spotify_import_done">इंपोर्ट पूरा: %2$d में से %1$d गाने मिले</string>
+    <string name="spotify_import_invalid_url">अमान्य Spotify URL</string>
+    <string name="spotify_hub_title">Spotify</string>
+    <string name="spotify_import_card_desc">लिंक से अपनी प्लेलिस्ट लाएँ</string>
+    <string name="spotify_jam_card_title">Jam में शामिल हों</string>
+    <string name="spotify_jam_card_desc">किसी दोस्त का Jam लिंक पेस्ट करें</string>
+    <string name="spotify_jam_dialog_title">Spotify Jam में शामिल हों</string>
+    <string name="spotify_jam_hint">Jam लिंक</string>
+    <string name="spotify_jam_help">होस्ट द्वारा शेयर किया गया लिंक पेस्ट करें। क्यू प्लेलिस्ट के रूप में सेव होगी और YouTube पर खोजी जाएगी।</string>
+    <string name="spotify_jam_join">शामिल हों</string>
+    <string name="spotify_jam_done">Jam सेव हुआ: %1$d गाने</string>
+    <string name="spotify_jam_hidden">यह Jam Spotify लॉगिन के बिना अपनी क्यू नहीं दिखाता। होस्ट से क्यू को प्लेलिस्ट के रूप में शेयर करने को कहें और यहाँ इंपोर्ट करें।</string>
+</resources>

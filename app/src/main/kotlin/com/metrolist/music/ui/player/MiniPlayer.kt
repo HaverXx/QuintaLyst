@@ -7,6 +7,7 @@
 
 package com.metrolist.music.ui.player
 
+import com.metrolist.music.ui.component.LiquidGlassButton
 import android.content.res.Configuration
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Animatable
@@ -93,6 +94,7 @@ import com.metrolist.music.constants.PureBlackMiniPlayerKey
 import com.metrolist.music.constants.SwipeSensitivityKey
 import com.metrolist.music.constants.SwipeThumbnailKey
 import com.metrolist.music.constants.ThumbnailCornerRadius
+import com.metrolist.music.constants.LocalThumbnailCornerRadius
 import com.metrolist.music.constants.UseNewMiniPlayerDesignKey
 import com.metrolist.music.db.entities.ArtistEntity
 import com.metrolist.music.listentogether.ListenTogetherManager
@@ -108,6 +110,10 @@ import kotlinx.coroutines.launch
 import kotlin.math.absoluteValue
 import kotlin.math.roundToInt
 import com.metrolist.music.ui.component.Icon as MIcon
+import com.metrolist.music.ui.component.LocalLiquidBackdrop
+import com.metrolist.music.ui.component.LocalRetroStyle
+import com.metrolist.music.ui.component.RetroMiniPlayer
+import com.metrolist.music.ui.component.liquidGlass
 import androidx.compose.ui.draw.blur
 import com.metrolist.music.constants.MiniPlayerBackgroundStyle
 import com.metrolist.music.constants.MiniPlayerBackgroundStyleKey
@@ -146,6 +152,11 @@ fun MiniPlayer(
     modifier: Modifier = Modifier,
     onClick: () -> Unit = {},
 ) {
+    if (LocalRetroStyle.current) {
+        RetroMiniPlayer(modifier = modifier)
+        return
+    }
+
     val useNewMiniPlayerDesign by rememberPreference(UseNewMiniPlayerDesignKey, true)
 
     // Create stable progress state - doesn't cause recomposition on position changes
@@ -293,9 +304,20 @@ private fun NewMiniPlayer(
         MiniPlayerBackgroundStyle.GRADIENT   -> MaterialTheme.colorScheme.surfaceContainer
         MiniPlayerBackgroundStyle.PURE_BLACK -> Color.Black
     }
+    // Oscurecimiento opcional de la barra (0 = diseño original). Con mucho oscurecimiento en tema claro
+    // los textos pasan a blanco para que se sigan leyendo.
+    val (miniPlayerDim) = rememberPreference(com.metrolist.music.constants.MiniPlayerDimKey, defaultValue = 0f)
+    val dimAlpha = miniPlayerDim.coerceIn(0f, 1f)
     val forceLightColors = !useDarkTheme && (miniPlayerBackground == MiniPlayerBackgroundStyle.PURE_BLACK ||
             miniPlayerBackground == MiniPlayerBackgroundStyle.BLUR ||
-            miniPlayerBackground == MiniPlayerBackgroundStyle.GRADIENT)
+            miniPlayerBackground == MiniPlayerBackgroundStyle.GRADIENT ||
+            dimAlpha >= 0.5f)
+
+    val liquidBackdrop = LocalLiquidBackdrop.current
+    val useLiquidGlass =
+        liquidBackdrop != null &&
+            (miniPlayerBackground == MiniPlayerBackgroundStyle.DEFAULT ||
+                miniPlayerBackground == MiniPlayerBackgroundStyle.TRANSPARENT)
 
     val primaryColor = if (forceLightColors) Color.White else MaterialTheme.colorScheme.primary
     val outlineColor = if (forceLightColors) Color.White else MaterialTheme.colorScheme.outline
@@ -379,10 +401,18 @@ private fun NewMiniPlayer(
                     .then(if (isTabletLandscape) Modifier.width(500.dp).align(Alignment.Center) else Modifier.fillMaxWidth())
                     .height(64.dp)
                     .offset { IntOffset(offsetXAnimatable.value.roundToInt(), 0) }
-                    .clip(RoundedCornerShape(32.dp))
-                    .background(color = backgroundColor)
-                    .border(1.dp, outlineColor.copy(alpha = 0.3f), RoundedCornerShape(32.dp))
-                    .clickable(
+                    .then(
+                        if (useLiquidGlass) {
+                            Modifier
+                                .liquidGlass(cornerRadius = 32.dp, fallbackColor = backgroundColor)
+                                .clip(RoundedCornerShape(32.dp))
+                        } else {
+                            Modifier
+                                .clip(RoundedCornerShape(32.dp))
+                                .background(color = backgroundColor)
+                                .border(1.dp, outlineColor.copy(alpha = 0.3f), RoundedCornerShape(32.dp))
+                        },
+                    ).clickable(
                         interactionSource = interactionSource,
                         indication = LocalIndication.current,
                         onClick = onClick
@@ -424,6 +454,13 @@ private fun NewMiniPlayer(
                     )
                 }
                 else -> {}
+            }
+            if (dimAlpha > 0f) {
+                Box(
+                    Modifier
+                        .fillMaxSize()
+                        .background(Color.Black.copy(alpha = dimAlpha)),
+                )
             }
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -857,11 +894,13 @@ private fun LegacyMiniPlayer(
                 listenTogetherManager = listenTogetherManager,
             )
 
-            IconButton(
+            LiquidGlassButton(
                 enabled = canSkipNext && !isListenTogetherGuest,
                 onClick = if (isListenTogetherGuest) ({}) else ({ playerConnection.seekToNext() }),
+                shape = CircleShape,
+                modifier = Modifier.size(40.dp),
             ) {
-                Icon(painter = painterResource(R.drawable.skip_next), contentDescription = null)
+                Icon(painter = painterResource(R.drawable.skip_next), contentDescription = null, modifier = Modifier.size(22.dp))
             }
         }
 
@@ -904,11 +943,13 @@ private fun LegacyPlayPauseButton(
     val isListenTogetherGuest = listenTogetherManager?.let { it.isInRoom && !it.isHost } ?: false
     val isMuted by playerConnection.isMuted.collectAsStateWithLifecycle()
 
-    IconButton(
+    LiquidGlassButton(
+        shape = CircleShape,
+        modifier = Modifier.size(40.dp),
         onClick = {
             if (isListenTogetherGuest) {
                 playerConnection.toggleMute()
-                return@IconButton
+                return@LiquidGlassButton
             }
             if (isCasting) {
                 if (castIsPlaying) castHandler?.pause() else castHandler?.play()
@@ -931,6 +972,7 @@ private fun LegacyPlayPauseButton(
                     },
                 ),
             contentDescription = null,
+            modifier = Modifier.size(22.dp),
         )
     }
 }
@@ -953,7 +995,7 @@ private fun LegacyMiniMediaInfo(
                 Modifier
                     .padding(6.dp)
                     .size(48.dp)
-                    .clip(RoundedCornerShape(ThumbnailCornerRadius)),
+                    .clip(RoundedCornerShape(LocalThumbnailCornerRadius.current)),
         ) {
             Box(
                 modifier =
@@ -973,7 +1015,7 @@ private fun LegacyMiniMediaInfo(
                 modifier =
                     Modifier
                         .fillMaxSize()
-                        .clip(RoundedCornerShape(ThumbnailCornerRadius)),
+                        .clip(RoundedCornerShape(LocalThumbnailCornerRadius.current)),
             )
 
             androidx.compose.animation.AnimatedVisibility(visible = error != null, enter = fadeIn(), exit = fadeOut()) {
@@ -982,7 +1024,7 @@ private fun LegacyMiniMediaInfo(
                         .fillMaxSize()
                         .background(
                             color = if (pureBlack) Color.Black else Color.Black.copy(alpha = 0.6f),
-                            shape = RoundedCornerShape(ThumbnailCornerRadius),
+                            shape = RoundedCornerShape(LocalThumbnailCornerRadius.current),
                         ),
                 ) {
                     Icon(

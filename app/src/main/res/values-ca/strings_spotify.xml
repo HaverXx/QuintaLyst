@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="import_from_spotify">Importa de Spotify</string>
+    <string name="playlist_import_error">Ha fallat la importació: %1$s</string>
+    <string name="spotify_playlist_url">URL o ID de la llista de Spotify</string>
+    <string name="spotify_import_searching">S\'estan cercant cançons a YouTube Music…</string>
+    <string name="spotify_import_done">Importació acabada: %1$d de %2$d cançons trobades</string>
+    <string name="spotify_import_invalid_url">URL de Spotify no vàlid</string>
+    <string name="spotify_hub_title">Spotify</string>
+    <string name="spotify_import_card_desc">Porta les teves llistes amb un enllaç</string>
+    <string name="spotify_jam_card_title">Uneix-te a una Jam</string>
+    <string name="spotify_jam_card_desc">Enganxa l\'enllaç de la Jam d\'un amic</string>
+    <string name="spotify_jam_dialog_title">Uneix-te a una Jam de Spotify</string>
+    <string name="spotify_jam_hint">Enllaç de la Jam</string>
+    <string name="spotify_jam_help">Enganxa l\'enllaç que ha compartit l\'amfitrió. La cua es desa com a llista i es cerca a YouTube.</string>
+    <string name="spotify_jam_join">Uneix-me</string>
+    <string name="spotify_jam_done">Jam desada: %1$d cançons</string>
+    <string name="spotify_jam_hidden">Aquesta Jam no exposa la cua sense iniciar sessió a Spotify. Demana a l\'amfitrió que comparteixi la cua com a llista i importa-la aquí.</string>
+</resources>

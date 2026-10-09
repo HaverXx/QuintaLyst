@@ -1,5 +1,7 @@
 package com.metrolist.music.ui.screens.settings
 
+import com.metrolist.music.ui.component.GlassOutlinedButton
+import com.metrolist.music.ui.component.GlassCard
 import android.app.AlarmManager
 import android.content.ActivityNotFoundException
 import android.content.Intent
@@ -385,7 +387,8 @@ private fun AlarmEditorDialog(
                 ) {
                     items(items = playlists, key = { it.id }) { playlist ->
                         val selected = playlist.id == playlistId
-                        Card(
+                        GlassCard(
+                            tint = if (selected) MaterialTheme.colorScheme.primary else null,
                             onClick = {
                                 playlistId = playlist.id
                                 showPlaylistDialog = false
@@ -489,7 +492,7 @@ private fun AlarmEditorDialog(
                 AlarmSwitch(checked = enabled, onCheckedChange = { enabled = it })
             }
 
-            FilledTonalButton(
+            GlassOutlinedButton(
                 onClick = { showTimePickerDialog = true },
                 modifier = Modifier.fillMaxWidth()
             ) {
@@ -503,7 +506,7 @@ private fun AlarmEditorDialog(
 
             HorizontalDivider()
 
-            OutlinedButton(
+            GlassOutlinedButton(
                 onClick = {
                     if (playlists.isEmpty()) {
                         Toast.makeText(context, noPlaylistsText, Toast.LENGTH_SHORT).show()

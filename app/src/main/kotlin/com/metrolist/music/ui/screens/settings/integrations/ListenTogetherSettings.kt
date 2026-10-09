@@ -5,6 +5,8 @@
 
 package com.metrolist.music.ui.screens.settings.integrations
 
+import com.metrolist.music.ui.component.GlassButton
+import com.metrolist.music.ui.component.GlassCard
 import android.widget.Toast
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Spring
@@ -196,7 +198,7 @@ fun ListenTogetherSettings(navController: NavController) {
                     Text(stringResource(R.string.reset))
                 }
                 Spacer(modifier = Modifier.width(8.dp))
-                Button(onClick = {
+                GlassButton(onClick = {
                     username = tempUsername.trim()
                     showUsernameDialog = false
                 }) {
@@ -236,7 +238,7 @@ fun ListenTogetherSettings(navController: NavController) {
                     Text(stringResource(android.R.string.cancel))
                 }
                 Spacer(modifier = Modifier.width(8.dp))
-                Button(
+                GlassButton(
                     onClick = {
                         val finalUsername = createUsername.trim()
                         if (finalUsername.isNotBlank()) {
@@ -287,7 +289,7 @@ fun ListenTogetherSettings(navController: NavController) {
                     Text(stringResource(android.R.string.cancel))
                 }
                 Spacer(modifier = Modifier.width(8.dp))
-                Button(
+                GlassButton(
                     onClick = {
                         val finalUsername = joinUsername.trim()
                         if (finalUsername.isNotBlank() && roomCodeInput.length == 8) {
@@ -576,7 +578,7 @@ fun LogsDialog(
                 Text(stringResource(R.string.clear))
             }
             Spacer(modifier = Modifier.width(8.dp))
-            Button(onClick = onDismiss) {
+            GlassButton(onClick = onDismiss) {
                 Text(stringResource(android.R.string.ok))
             }
         },
@@ -641,7 +643,8 @@ private fun ServerChooserDialog(
         ) {
             servers.forEach { server ->
                 val isSelected = server.url == currentUrl
-                Card(
+                GlassCard(
+                    tint = if (isSelected) MaterialTheme.colorScheme.primary else null,
                     modifier =
                         Modifier
                             .fillMaxWidth()
@@ -711,7 +714,7 @@ private fun ServerChooserDialog(
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
             )
-            Button(
+            GlassButton(
                 onClick = { onUseCustom(trimmedCustomUrl) },
                 enabled = trimmedCustomUrl.isNotBlank(),
                 modifier = Modifier.fillMaxWidth(),
@@ -800,7 +803,7 @@ fun BlockedUsersDialog(
         icon = { Icon(painterResource(R.drawable.person), contentDescription = null) },
         title = { Text(stringResource(R.string.listen_together_blocked_users)) },
         buttons = {
-            Button(onClick = onDismiss) {
+            GlassButton(onClick = onDismiss) {
                 Text(stringResource(android.R.string.ok))
             }
         },

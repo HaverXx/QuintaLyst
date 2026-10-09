@@ -5,6 +5,8 @@
 
 package com.metrolist.music.ui.screens
 
+import com.metrolist.music.ui.component.GlassButton
+import com.metrolist.music.ui.component.GlassCard
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -46,7 +48,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ContainedLoadingIndicator
+import com.metrolist.music.ui.component.ContainedMorphLoadingIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
@@ -119,6 +121,14 @@ import com.metrolist.music.constants.InnerTubeCookieKey
 import com.metrolist.music.constants.ListItemHeight
 import com.metrolist.music.constants.ListThumbnailSize
 import com.metrolist.music.constants.RandomizeHomeOrderKey
+import com.metrolist.music.constants.ShowSpeedDialKey
+import com.metrolist.music.constants.ShowQuickPicksKey
+import com.metrolist.music.constants.ShowDailyDiscoverKey
+import com.metrolist.music.constants.ShowKeepListeningKey
+import com.metrolist.music.constants.ShowAccountPlaylistsKey
+import com.metrolist.music.constants.ShowForgottenFavoritesKey
+import com.metrolist.music.constants.ShowFromTheCommunityKey
+import com.metrolist.music.constants.ShowMoodAndGenresKey
 import com.metrolist.music.constants.SmallGridThumbnailHeight
 import com.metrolist.music.constants.ThumbnailCornerRadius
 import com.metrolist.music.db.entities.Album
@@ -134,10 +144,12 @@ import com.metrolist.music.playback.queues.ListQueue
 import com.metrolist.music.playback.queues.LocalAlbumRadio
 import com.metrolist.music.playback.queues.YouTubeAlbumRadio
 import com.metrolist.music.playback.queues.YouTubeQueue
+import androidx.compose.foundation.BorderStroke
 import com.metrolist.music.ui.component.AlbumGridItem
 import com.metrolist.music.ui.component.ArtistGridItem
 import com.metrolist.music.ui.component.ChipsRow
 import com.metrolist.music.ui.component.HideOnScrollFAB
+import com.metrolist.music.ui.component.LiquidGlassButton
 import com.metrolist.music.ui.component.LocalBottomSheetPageState
 import com.metrolist.music.ui.component.LocalMenuState
 import com.metrolist.music.ui.component.NavigationTitle
@@ -220,15 +232,23 @@ fun CommunityPlaylistCard(
 
     val containerColor =
         if (isDark) {
-            MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp)
+            Color.Black.copy(alpha = 0.35f)
         } else {
-            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+            Color.White.copy(alpha = 0.55f)
         }
+
+    val rimBrush =
+        Brush.verticalGradient(
+            listOf(
+                Color.White.copy(alpha = if (isDark) 0.35f else 0.85f),
+                Color.White.copy(alpha = if (isDark) 0.08f else 0.20f),
+            ),
+        )
 
     val dbPlaylist by database.playlistByBrowseId(item.playlist.id).collectAsStateWithLifecycle(initialValue = null)
     val isBookmarked = dbPlaylist?.playlist?.bookmarkedAt != null
 
-    Card(
+    GlassCard(
         modifier =
             modifier
                 .width(320.dp)
@@ -237,6 +257,7 @@ fun CommunityPlaylistCard(
             CardDefaults.cardColors(
                 containerColor = containerColor,
             ),
+        border = BorderStroke(1.dp, rimBrush),
         shape = RoundedCornerShape(28.dp),
         onClick = onClick,
     ) {
@@ -393,9 +414,14 @@ fun CommunityPlaylistCard(
                     Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp, vertical = 16.dp),
-                horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterHorizontally),
+                horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterHorizontally),
+                verticalAlignment = Alignment.CenterVertically,
             ) {
-                IconButton(
+                LiquidGlassButton(
+                    size = 52.dp,
+                    iconSize = 26.dp,
+                    iconRes = R.drawable.ic_widget_play,
+                    isActive = true,
                     onClick = {
                         if (!isListenTogetherGuest) {
                             item.playlist.playEndpoint?.let {
@@ -403,20 +429,12 @@ fun CommunityPlaylistCard(
                             }
                         }
                     },
-                    modifier =
-                        Modifier
-                            .size(48.dp)
-                            .background(MaterialTheme.colorScheme.primaryContainer, CircleShape),
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.ic_widget_play),
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                        modifier = Modifier.size(24.dp),
-                    )
-                }
+                )
 
-                IconButton(
+                LiquidGlassButton(
+                    size = 48.dp,
+                    iconSize = 24.dp,
+                    iconRes = R.drawable.radio,
                     onClick = {
                         if (!isListenTogetherGuest) {
                             item.playlist.radioEndpoint?.let {
@@ -424,20 +442,13 @@ fun CommunityPlaylistCard(
                             }
                         }
                     },
-                    modifier =
-                        Modifier
-                            .size(48.dp)
-                            .background(MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f), CircleShape),
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.radio),
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSecondaryContainer,
-                        modifier = Modifier.size(24.dp),
-                    )
-                }
+                )
 
-                IconButton(
+                LiquidGlassButton(
+                    size = 48.dp,
+                    iconSize = 24.dp,
+                    iconRes = if (isBookmarked) R.drawable.library_add_check else R.drawable.library_add,
+                    isActive = isBookmarked,
                     onClick = {
                         scope.launch(Dispatchers.IO) {
                             if (dbPlaylist?.playlist == null) {
@@ -484,18 +495,7 @@ fun CommunityPlaylistCard(
                             }
                         }
                     },
-                    modifier =
-                        Modifier
-                            .size(48.dp)
-                            .background(MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f), CircleShape),
-                ) {
-                    Icon(
-                        painter = painterResource(if (isBookmarked) R.drawable.library_add_check else R.drawable.library_add),
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSecondaryContainer,
-                        modifier = Modifier.size(24.dp),
-                    )
-                }
+                )
             }
         }
     }
@@ -681,6 +681,12 @@ fun HomeScreen(
     val episodesForLater by viewModel.episodesForLater.collectAsStateWithLifecycle()
 
     val isLoading: Boolean by viewModel.isLoading.collectAsStateWithLifecycle()
+    LaunchedEffect(isLoading, homePage, quickPicks, forgottenFavorites, keepListening) {
+        if (!isLoading && (homePage != null || quickPicks != null || forgottenFavorites != null || keepListening != null)) {
+            kotlinx.coroutines.delay(250)
+            com.metrolist.music.ui.component.StartupGate.markReady()
+        }
+    }
     val isMoodAndGenresLoading = isLoading && explorePage?.moodAndGenres == null
     val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
     val isRandomizing by viewModel.isRandomizing.collectAsStateWithLifecycle()
@@ -694,6 +700,14 @@ fun HomeScreen(
     val innerTubeCookie by rememberPreference(InnerTubeCookieKey, "")
     val (randomizeHomeOrder) = rememberPreference(RandomizeHomeOrderKey, true)
     val autoRadioQueue by rememberPreference(AutoRadioQueueKey, defaultValue = true)
+    val (showSpeedDial) = rememberPreference(ShowSpeedDialKey, defaultValue = true)
+    val (showQuickPicks) = rememberPreference(ShowQuickPicksKey, defaultValue = true)
+    val (showDailyDiscover) = rememberPreference(ShowDailyDiscoverKey, defaultValue = true)
+    val (showKeepListening) = rememberPreference(ShowKeepListeningKey, defaultValue = true)
+    val (showAccountPlaylists) = rememberPreference(ShowAccountPlaylistsKey, defaultValue = true)
+    val (showForgottenFavorites) = rememberPreference(ShowForgottenFavoritesKey, defaultValue = true)
+    val (showFromTheCommunity) = rememberPreference(ShowFromTheCommunityKey, defaultValue = true)
+    val (showMoodAndGenres) = rememberPreference(ShowMoodAndGenresKey, defaultValue = true)
 
     LaunchedEffect(Unit) { viewModel.loadHomeData() }
 
@@ -1038,17 +1052,25 @@ fun HomeScreen(
             similarRecommendations,
             homePage?.sections,
             explorePage?.moodAndGenres,
+            showSpeedDial,
+            showQuickPicks,
+            showDailyDiscover,
+            showKeepListening,
+            showAccountPlaylists,
+            showForgottenFavorites,
+            showFromTheCommunity,
+            showMoodAndGenres,
         ) {
             val list = mutableListOf<HomeSection>()
             val chipActive = selectedChip != null
 
-            if (!chipActive && speedDialItems.isNotEmpty()) list.add(HomeSection.SpeedDial)
-            if (!chipActive && quickPicks?.isNotEmpty() == true) list.add(HomeSection.QuickPicks)
-            if (!chipActive && communityPlaylists?.isNotEmpty() == true) list.add(HomeSection.FromTheCommunity)
-            if (!chipActive && dailyDiscover?.isNotEmpty() == true) list.add(HomeSection.DailyDiscover)
-            if (!chipActive && keepListening?.isNotEmpty() == true) list.add(HomeSection.KeepListening)
-            if (!chipActive && accountPlaylists?.isNotEmpty() == true) list.add(HomeSection.AccountPlaylists)
-            if (!chipActive && forgottenFavorites?.isNotEmpty() == true) list.add(HomeSection.ForgottenFavorites)
+            if (!chipActive && showSpeedDial && speedDialItems.isNotEmpty()) list.add(HomeSection.SpeedDial)
+            if (!chipActive && showQuickPicks && quickPicks?.isNotEmpty() == true) list.add(HomeSection.QuickPicks)
+            if (!chipActive && showFromTheCommunity && communityPlaylists?.isNotEmpty() == true) list.add(HomeSection.FromTheCommunity)
+            if (!chipActive && showDailyDiscover && dailyDiscover?.isNotEmpty() == true) list.add(HomeSection.DailyDiscover)
+            if (!chipActive && showKeepListening && keepListening?.isNotEmpty() == true) list.add(HomeSection.KeepListening)
+            if (!chipActive && showAccountPlaylists && accountPlaylists?.isNotEmpty() == true) list.add(HomeSection.AccountPlaylists)
+            if (!chipActive && showForgottenFavorites && forgottenFavorites?.isNotEmpty() == true) list.add(HomeSection.ForgottenFavorites)
 
             if (!chipActive) {
                 similarRecommendations?.indices?.forEach { i ->
@@ -1060,7 +1082,7 @@ fun HomeScreen(
                 list.add(HomeSection.HomePageSection(i))
             }
 
-            if (explorePage?.moodAndGenres != null) list.add(HomeSection.MoodAndGenres)
+            if (showMoodAndGenres && explorePage?.moodAndGenres != null) list.add(HomeSection.MoodAndGenres)
 
             if (randomizeHomeOrder) {
                 list.sortedByDescending { section ->
@@ -1196,6 +1218,7 @@ fun HomeScreen(
                         onValueUpdate = {
                             viewModel.toggleChip(it)
                         },
+                        modifier = Modifier.padding(top = 24.dp, bottom = 4.dp),
                     )
                 }
 
@@ -1375,7 +1398,7 @@ fun HomeScreen(
                 if (selectedChip == null) {
                     item(key = "wrapped_card") {
                         AnimatedVisibility(visible = shouldShowWrappedCard) {
-                            Card(
+                            GlassCard(
                                 modifier =
                                     Modifier
                                         .fillMaxWidth()
@@ -1420,14 +1443,14 @@ fun HomeScreen(
                                                     ),
                                             )
                                             Spacer(modifier = Modifier.height(16.dp))
-                                            Button(onClick = {
+                                            GlassButton(onClick = {
                                                 navController.navigate("wrapped")
                                             }) {
                                                 Text(stringResource(R.string.open))
                                             }
                                         }
                                     } else {
-                                        ContainedLoadingIndicator()
+                                        ContainedMorphLoadingIndicator()
                                     }
                                 }
                             }

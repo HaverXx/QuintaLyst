@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="import_from_spotify">Importar de Spotify</string>
+    <string name="playlist_import_error">Fallou a importación: %1$s</string>
+    <string name="spotify_playlist_url">URL ou ID da lista de Spotify</string>
+    <string name="spotify_import_searching">Buscando cancións en YouTube Music…</string>
+    <string name="spotify_import_done">Importación rematada: %1$d de %2$d cancións atopadas</string>
+    <string name="spotify_import_invalid_url">URL de Spotify non válido</string>
+    <string name="spotify_hub_title">Spotify</string>
+    <string name="spotify_import_card_desc">Trae as túas listas cunha ligazón</string>
+    <string name="spotify_jam_card_title">Unirse a unha Jam</string>
+    <string name="spotify_jam_card_desc">Pega a ligazón da Jam dun amigo</string>
+    <string name="spotify_jam_dialog_title">Unirse a unha Jam de Spotify</string>
+    <string name="spotify_jam_hint">Ligazón da Jam</string>
+    <string name="spotify_jam_help">Pega a ligazón que compartiu o anfitrión. A cola gárdase como lista e búscase en YouTube.</string>
+    <string name="spotify_jam_join">Unirme</string>
+    <string name="spotify_jam_done">Jam gardada: %1$d cancións</string>
+    <string name="spotify_jam_hidden">Esta Jam non mostra a cola sen iniciar sesión en Spotify. Pídelle ao anfitrión que comparta a cola como lista e impórtaa aquí.</string>
+</resources>

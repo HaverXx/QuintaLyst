@@ -38,6 +38,7 @@ import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
@@ -55,9 +56,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.ContainedLoadingIndicator
+import com.metrolist.music.ui.component.ContainedMorphLoadingIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FilledIconButton
@@ -71,6 +73,7 @@ import androidx.compose.material3.SliderState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -87,6 +90,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
@@ -141,8 +145,16 @@ import com.metrolist.music.LocalPlayerConnection
 import com.metrolist.music.R
 import com.metrolist.music.constants.CropAlbumArtKey
 import com.metrolist.music.constants.DarkModeKey
+import com.metrolist.music.constants.DynamicBackgroundKey
+import com.metrolist.music.constants.DynamicBackgroundStyle
+import com.metrolist.music.constants.DynamicBackgroundStyleKey
+import com.metrolist.music.constants.DynamicBgIntensityKey
+import com.metrolist.music.constants.DynamicBgSpeedKey
 import com.metrolist.music.constants.HidePlayerThumbnailKey
 import com.metrolist.music.constants.HideStatusBarOnFullscreenKey
+import com.metrolist.music.ui.component.AnimatedDynamicMesh
+import com.metrolist.music.ui.component.LiquidGlassAlbumMesh
+import androidx.compose.ui.graphics.graphicsLayer
 import com.metrolist.music.constants.KeepScreenOn
 import com.metrolist.music.constants.PlayerBackgroundStyle
 import com.metrolist.music.constants.PlayerBackgroundStyleKey
@@ -174,6 +186,16 @@ import com.metrolist.music.ui.component.ResizableIconButton
 import com.metrolist.music.ui.component.SquigglySlider
 import com.metrolist.music.ui.component.WavySlider
 import com.metrolist.music.ui.component.rememberBottomSheetState
+import com.metrolist.music.ui.component.liquidGlass
+import com.metrolist.music.ui.component.LocalLiquidBackdrop
+import com.metrolist.music.ui.component.LiquidGlassButton
+import com.metrolist.music.ui.component.LocalRetroSheetProgress
+import com.metrolist.music.ui.component.LocalRetroStyle
+import com.metrolist.music.ui.component.RetroTvBackground
+import com.metrolist.music.ui.component.GlassButton
+import com.metrolist.music.ui.component.GlassOutlinedButton
+import com.metrolist.music.ui.component.liquidGlassSource
+import com.metrolist.music.ui.component.rememberLiquidBackdrop
 import com.metrolist.music.ui.menu.PlayerMenu
 import com.metrolist.music.ui.screens.settings.DarkMode
 import com.metrolist.music.ui.theme.PlayerColorExtractor
@@ -216,6 +238,7 @@ fun BottomSheetPlayer(
     val copiedArtistStr = stringResource(R.string.copied_artist)
     val bottomSheetPageState = LocalBottomSheetPageState.current
     val playerConnection = LocalPlayerConnection.current ?: return
+    val retro = LocalRetroStyle.current
 
     val (useNewPlayerDesign, onUseNewPlayerDesignChange) =
         rememberPreference(
@@ -238,6 +261,29 @@ fun BottomSheetPlayer(
         key = PlayerBackgroundStyleKey,
         defaultValue = PlayerBackgroundStyle.DEFAULT,
     )
+    val (appBgModeRaw) = rememberPreference(com.metrolist.music.constants.AppBackgroundModeKey, defaultValue = "")
+    val (legacyDynamicBackground) = rememberPreference(DynamicBackgroundKey, defaultValue = true)
+    val legacyDynamicBgStyle by rememberEnumPreference(DynamicBackgroundStyleKey, defaultValue = DynamicBackgroundStyle.BLUR_ALBUM)
+    val (homeWallpaperPathPref) = rememberPreference(com.metrolist.music.constants.HomeWallpaperKey, defaultValue = "")
+    val appBgMode =
+        com.metrolist.music.constants.resolveAppBackgroundMode(
+            saved = appBgModeRaw,
+            legacyDynamic = legacyDynamicBackground,
+            legacyStyle = legacyDynamicBgStyle,
+            hasWallpaper = homeWallpaperPathPref.isNotBlank(),
+        )
+    val dynamicBackground =
+        appBgMode == com.metrolist.music.constants.AppBackgroundMode.ANIMATED_GRADIENT ||
+            appBgMode == com.metrolist.music.constants.AppBackgroundMode.ALBUM
+    val dynamicBgStyle =
+        if (appBgMode == com.metrolist.music.constants.AppBackgroundMode.ALBUM) {
+            DynamicBackgroundStyle.BLUR_ALBUM
+        } else {
+            DynamicBackgroundStyle.GRADIENT
+        }
+    val (dynamicBgIntensity) = rememberPreference(DynamicBgIntensityKey, defaultValue = 0.5f)
+    val (dynamicBgSpeed) = rememberPreference(DynamicBgSpeedKey, defaultValue = 1f)
+
     val playerButtonsStyle by rememberEnumPreference(
         key = PlayerButtonsStyleKey,
         defaultValue = PlayerButtonsStyle.DEFAULT,
@@ -250,11 +296,14 @@ fun BottomSheetPlayer(
             if (darkTheme == DarkMode.AUTO) isSystemInDarkTheme else darkTheme == DarkMode.ON
         }
 
+    val isDynamicMeshActive = playerBackground == PlayerBackgroundStyle.DEFAULT && dynamicBackground
+
     val shouldUseDarkButtonColors =
-        remember(playerBackground, useDarkTheme) {
-            when (playerBackground) {
-                PlayerBackgroundStyle.BLUR, PlayerBackgroundStyle.GRADIENT -> true
-                PlayerBackgroundStyle.DEFAULT -> useDarkTheme
+        remember(playerBackground, useDarkTheme, isDynamicMeshActive) {
+            when {
+                isDynamicMeshActive -> true
+                playerBackground == PlayerBackgroundStyle.BLUR || playerBackground == PlayerBackgroundStyle.GRADIENT -> true
+                else -> useDarkTheme
             }
         }
 
@@ -409,8 +458,10 @@ fun BottomSheetPlayer(
     val defaultGradientColors = listOf(MaterialTheme.colorScheme.surface, MaterialTheme.colorScheme.surfaceVariant)
     val fallbackColor = MaterialTheme.colorScheme.surface.toArgb()
 
-    LaunchedEffect(mediaMetadata?.id, playerBackground) {
-        if (playerBackground == PlayerBackgroundStyle.GRADIENT) {
+    LaunchedEffect(mediaMetadata?.id, playerBackground, isDynamicMeshActive) {
+        val needsColorExtraction = playerBackground == PlayerBackgroundStyle.GRADIENT ||
+            isDynamicMeshActive
+        if (needsColorExtraction) {
             val currentMetadata = mediaMetadata
             if (currentMetadata != null && currentMetadata.thumbnailUrl != null) {
                 val cachedColors = gradientColorsCache[currentMetadata.id]
@@ -458,10 +509,11 @@ fun BottomSheetPlayer(
 
     val TextBackgroundColor by animateColorAsState(
         targetValue =
-            when (playerBackground) {
-                PlayerBackgroundStyle.DEFAULT -> MaterialTheme.colorScheme.onBackground
-                PlayerBackgroundStyle.BLUR -> Color.White
-                PlayerBackgroundStyle.GRADIENT -> Color.White
+            when {
+                isDynamicMeshActive -> Color.White
+                playerBackground == PlayerBackgroundStyle.BLUR -> Color.White
+                playerBackground == PlayerBackgroundStyle.GRADIENT -> Color.White
+                else -> MaterialTheme.colorScheme.onBackground
             },
         label = "TextBackgroundColor",
     )
@@ -640,7 +692,7 @@ fun BottomSheetPlayer(
             },
             title = { Text(stringResource(R.string.sleep_timer)) },
             confirmButton = {
-                TextButton(
+                GlassButton(
                     onClick = {
                         showSleepTimerDialog = false
                         playerConnection.service.sleepTimer?.start(
@@ -654,7 +706,7 @@ fun BottomSheetPlayer(
                 }
             },
             dismissButton = {
-                TextButton(
+                GlassOutlinedButton(
                     onClick = { showSleepTimerDialog = false },
                 ) {
                     Text(stringResource(android.R.string.cancel))
@@ -684,7 +736,7 @@ fun BottomSheetPlayer(
                         horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
                         if (isAtDefault) {
-                            FilledIconButton(
+                            GlassButton(
                                 onClick = {
                                     scope.launch {
                                         context.safeDataStoreEdit { settings ->
@@ -697,15 +749,11 @@ fun BottomSheetPlayer(
                                         Toast.LENGTH_SHORT,
                                     ).show()
                                 },
-                                colors = IconButtonDefaults.filledIconButtonColors(
-                                    containerColor = MaterialTheme.colorScheme.primary,
-                                    contentColor = MaterialTheme.colorScheme.onPrimary,
-                                ),
                             ) {
                                 Text(stringResource(R.string.set_as_default))
                             }
                         } else {
-                            OutlinedIconButton(
+                            GlassOutlinedButton(
                                 onClick = {
                                     scope.launch {
                                         context.safeDataStoreEdit { settings ->
@@ -723,7 +771,7 @@ fun BottomSheetPlayer(
                             }
                         }
 
-                        OutlinedIconButton(
+                        GlassOutlinedButton(
                             onClick = {
                                 showSleepTimerDialog = false
                                 playerConnection.service.sleepTimer?.start(minute = -1)
@@ -830,17 +878,100 @@ fun BottomSheetPlayer(
 
     val backgroundAlpha = state.progress.coerceIn(0f, 1f)
 
+    // Fondo propio del reproductor: los botones de cristal refractan ESTE fondo (portada difuminada,
+    // degradado, malla...) y no la pantalla que queda detrás de la hoja.
+    val outerGlassBackdrop = LocalLiquidBackdrop.current
+    // Lo que se ve tras el cristal: solo el fondo de la app (no la pestaña de inicio ni sus botones).
+    val backgroundOnlyBackdrop = com.metrolist.music.ui.component.LocalPlayerBackdrop.current ?: outerGlassBackdrop
+    val (playerGlassOpacity) = com.metrolist.music.utils.rememberPreference(com.metrolist.music.constants.PlayerGlassOpacityKey, defaultValue = 0.55f)
+    val playerBackdropRaw = rememberLiquidBackdrop()
+    val playerBackdrop = if (outerGlassBackdrop != null) playerBackdropRaw else null
+    // Con cristal activo las capas de color (portada, degradado, malla) se vuelven translúcidas para que se vea la lámina de cristal.
+    val glassContentAlpha = if (playerBackdrop != null) playerGlassOpacity.coerceIn(0.1f, 1f) else 1f
+    // Con cristal, el fondo es un panel que se mueve con la hoja y su fundido lo gestiona BottomSheet.
+    val layerAlpha = if (playerBackdrop != null) 1f else backgroundAlpha
+    // Al deslizar hacia abajo la hoja se redondea por arriba y su canto se marca; totalmente abierta es un rectángulo.
+    val dragFactor = ((1f - state.progress) * 5f).coerceIn(0f, 1f)
+    val panelRadius = 0.dp // sin esquinas redondeadas ni borde blanco al deslizar
+    val panelShape = RoundedCornerShape(topStart = panelRadius, topEnd = panelRadius)
+    val edgeStrength = 0f
+
+    // Fondo plano del reproductor (degradado animado, degradado de portada o color liso): sin arcoíris en las zonas lisas.
+    val playerFlatBackground =
+        if (isDynamicMeshActive) {
+            dynamicBgStyle == DynamicBackgroundStyle.GRADIENT
+        } else {
+            playerBackground != PlayerBackgroundStyle.BLUR
+        }
+
+    val sheetProgress = remember(state) { { state.progress } }
+
     BottomSheet(
         state = state,
         modifier = modifier,
-        background = {
+        backgroundFollowsSheet = playerBackdrop != null,
+        collapsedCornerRadius = 0.dp,
+        background = bg@{
+            if (retro) {
+                RetroTvBackground(modifier = Modifier.fillMaxSize())
+                return@bg
+            }
             Box(
                 modifier =
                     Modifier
                         .fillMaxSize()
-                        .background(bottomSheetBackgroundColor),
+                        .then(
+                            if (playerBackdrop != null) {
+                                Modifier.clip(panelShape).liquidGlassSource(playerBackdrop, Color.Transparent)
+                            } else {
+                                Modifier.background(bottomSheetBackgroundColor)
+                            },
+                        ),
             ) {
-                when (playerBackground) {
+                // Base de Liquid Glass: lámina que refracta el fondo real de la app (el mismo backdrop que usan
+                // las tarjetas y botones del resto de secciones). LocalLiquidBackdrop aquí todavía es el exterior,
+                // así que no se refracta a sí misma.
+                if (playerBackdrop != null) {
+                  CompositionLocalProvider(LocalLiquidBackdrop provides backgroundOnlyBackdrop) {
+                    Box(
+                        modifier =
+                            Modifier
+                                .fillMaxSize()
+                                .liquidGlass(
+                                    shape = panelShape,
+                                    fallbackColor = bottomSheetBackgroundColor,
+                                    refraction = 12.dp,
+                                    bezel = 34.dp,
+                                    blur = 3.dp,
+                                    chromaticAberration = 0.35f,
+                                    saturation = 1.45f,
+                                    edges = false,
+                                    tint = bottomSheetBackgroundColor.copy(alpha = (playerGlassOpacity.coerceIn(0.1f, 1f) * (if (useDarkTheme) 0.5f else 0.44f))),
+                                ),
+                    )
+                  }
+                }
+                if (isDynamicMeshActive) {
+                    Box(modifier = Modifier.fillMaxSize().alpha(layerAlpha * glassContentAlpha)) {
+                        if (dynamicBgStyle == DynamicBackgroundStyle.BLUR_ALBUM) {
+                            LiquidGlassAlbumMesh(
+                                thumbnailUrl = mediaMetadata?.thumbnailUrl,
+                                modifier = Modifier.fillMaxSize(),
+                                pureBlack = useBlackBackground,
+                                intensity = dynamicBgIntensity,
+                                baseColor = if (useBlackBackground) Color.Black else if (useDarkTheme) Color(0xFF0C0C10) else Color(0xFFF5F5FA),
+                            )
+                        } else {
+                            AnimatedDynamicMesh(
+                                themeColor = gradientColors.firstOrNull() ?: MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.fillMaxSize(),
+                                intensity = dynamicBgIntensity,
+                                speed = dynamicBgSpeed,
+                                baseColor = if (useBlackBackground) Color.Black else if (useDarkTheme) Color(0xFF0C0C10) else Color(0xFFF5F5FA),
+                            )
+                        }
+                    }
+                } else when (playerBackground) {
                     PlayerBackgroundStyle.BLUR -> {
                         AnimatedContent(
                             targetState = mediaMetadata?.thumbnailUrl,
@@ -850,13 +981,13 @@ fun BottomSheetPlayer(
                             label = "blurBackground",
                         ) { thumbnailUrl ->
                             if (thumbnailUrl != null) {
-                                Box(modifier = Modifier.alpha(backgroundAlpha)) {
+                                Box(modifier = Modifier.fillMaxSize().alpha(layerAlpha * glassContentAlpha)) {
                                     AsyncImage(
                                         model =
                                             ImageRequest
                                                 .Builder(context)
                                                 .data(thumbnailUrl)
-                                                .size(100, 100)
+                                                .size(400, 400)
                                                 .allowHardware(false)
                                                 .build(),
                                         contentDescription = null,
@@ -864,13 +995,17 @@ fun BottomSheetPlayer(
                                         modifier =
                                             Modifier
                                                 .fillMaxSize()
-                                                .blur(if (useDarkTheme) 150.dp else 100.dp),
+                                                .graphicsLayer {
+                                                    scaleX = 1.35f
+                                                    scaleY = 1.35f
+                                                }
+                                                .blur(if (useDarkTheme) 90.dp else 60.dp),
                                     )
                                     Box(
                                         modifier =
                                             Modifier
                                                 .fillMaxSize()
-                                                .background(Color.Black.copy(alpha = 0.3f)),
+                                                .background(if (useDarkTheme) Color.Black.copy(alpha = 0.40f) else Color.White.copy(alpha = 0.20f)),
                                     )
                                 }
                             }
@@ -903,7 +1038,7 @@ fun BottomSheetPlayer(
                                 Box(
                                     Modifier
                                         .fillMaxSize()
-                                        .alpha(backgroundAlpha)
+                                        .alpha(layerAlpha * glassContentAlpha)
                                         .background(Brush.verticalGradient(colorStops = gradientColorStops))
                                         .background(Color.Black.copy(alpha = 0.2f)),
                                 )
@@ -912,8 +1047,54 @@ fun BottomSheetPlayer(
                     }
 
                     else -> {
-                        PlayerBackgroundStyle.DEFAULT
+                        // Con cristal activo, el fondo por defecto también lleva la portada difuminada
+                        // para que el cristal tenga algo que refractar.
+                        if (playerBackdrop != null) {
+                            Box(modifier = Modifier.fillMaxSize().alpha(layerAlpha * glassContentAlpha)) {
+                                LiquidGlassAlbumMesh(
+                                    thumbnailUrl = mediaMetadata?.thumbnailUrl,
+                                    modifier = Modifier.fillMaxSize(),
+                                    pureBlack = useBlackBackground,
+                                    intensity = 0.6f,
+                                    baseColor = if (useBlackBackground) Color.Black else if (useDarkTheme) Color(0xFF0C0C10) else Color(0xFFF5F5FA),
+                                )
+                            }
+                        }
                     }
+                }
+                // Capa de cristal sobre todo el fondo: brillo superior, luz en la base y canto especular arriba.
+                if (playerBackdrop != null) {
+                    Box(
+                        modifier =
+                            Modifier
+                                .fillMaxSize()
+                                .alpha(layerAlpha)
+                                .drawBehind {
+                                    // Destellos de luz sobre el cristal: uno arriba a la izquierda y otro abajo a la derecha.
+                                    drawRect(
+                                        Brush.radialGradient(
+                                            colors = listOf(Color.White.copy(alpha = 0.26f), Color.Transparent),
+                                            center = Offset(size.width * 0.10f, size.height * 0.04f),
+                                            radius = size.maxDimension * 0.75f,
+                                        ),
+                                    )
+                                    drawRect(
+                                        Brush.radialGradient(
+                                            colors = listOf(Color.White.copy(alpha = 0.16f), Color.Transparent),
+                                            center = Offset(size.width * 0.95f, size.height * 0.97f),
+                                            radius = size.maxDimension * 0.65f,
+                                        ),
+                                    )
+                                    drawRect(
+                                        Brush.verticalGradient(
+                                            0f to Color.White.copy(alpha = 0.10f),
+                                            0.30f to Color.Transparent,
+                                            0.75f to Color.Transparent,
+                                            1f to Color.White.copy(alpha = 0.07f),
+                                        ),
+                                    )
+                                },
+                    )
                 }
             }
         },
@@ -935,6 +1116,11 @@ fun BottomSheetPlayer(
             )
         },
     ) {
+        CompositionLocalProvider(
+            LocalLiquidBackdrop provides (playerBackdrop ?: LocalLiquidBackdrop.current),
+            LocalRetroSheetProgress provides sheetProgress,
+            com.metrolist.music.ui.component.LocalGlassFlatBackground provides playerFlatBackground,
+        ) {
         val controlsContent: @Composable ColumnScope.(MediaMetadata) -> Unit = { mediaMetadata ->
             val playPauseRoundness by animateDpAsState(
                 targetValue = if (isPlaying) 24.dp else 36.dp,
@@ -1125,48 +1311,26 @@ fun BottomSheetPlayer(
                 Spacer(modifier = Modifier.width(12.dp))
 
                 if (useNewPlayerDesign) {
-                    val shareShape =
-                        RoundedCornerShape(
-                            topStart = 50.dp,
-                            bottomStart = 50.dp,
-                            topEnd = 3.dp,
-                            bottomEnd = 3.dp,
-                        )
-
-                    val favShape =
-                        RoundedCornerShape(
-                            topStart = 3.dp,
-                            bottomStart = 3.dp,
-                            topEnd = 50.dp,
-                            bottomEnd = 50.dp,
-                        )
-
-                    val middleShape = RoundedCornerShape(3.dp)
-
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(6.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         AnimatedContent(targetState = showInlineLyrics, label = "ShareButton") { showLyrics ->
                             if (showLyrics) {
-                                FilledIconButton(
+                                LiquidGlassButton(
                                     onClick = { isFullScreen = !isFullScreen },
-                                    shape = shareShape,
-                                    colors =
-                                        IconButtonDefaults.filledIconButtonColors(
-                                            containerColor = textButtonColor,
-                                            contentColor = iconButtonColor,
-                                        ),
+                                    shape = CircleShape,
                                     modifier = Modifier.size(42.dp),
                                 ) {
                                     Icon(
                                         painter = painterResource(R.drawable.fullscreen),
                                         contentDescription = null,
-                                        modifier = Modifier.size(24.dp),
+                                        tint = Color.White,
+                                        modifier = Modifier.size(22.dp),
                                     )
                                 }
                             } else {
-                                FilledIconButton(
+                                LiquidGlassButton(
                                     onClick = {
                                         val intent =
                                             Intent().apply {
@@ -1179,18 +1343,14 @@ fun BottomSheetPlayer(
                                             }
                                         context.startActivity(Intent.createChooser(intent, null))
                                     },
-                                    shape = shareShape,
-                                    colors =
-                                        IconButtonDefaults.filledIconButtonColors(
-                                            containerColor = textButtonColor,
-                                            contentColor = iconButtonColor,
-                                        ),
+                                    shape = CircleShape,
                                     modifier = Modifier.size(42.dp),
                                 ) {
                                     Icon(
                                         painter = painterResource(R.drawable.share),
                                         contentDescription = null,
-                                        modifier = Modifier.size(24.dp),
+                                        tint = Color.White,
+                                        modifier = Modifier.size(22.dp),
                                     )
                                 }
                             }
@@ -1199,7 +1359,7 @@ fun BottomSheetPlayer(
                         AnimatedContent(targetState = showInlineLyrics, label = "LikeButton") { showLyrics ->
                             if (showLyrics) {
                                 val currentLyrics by playerConnection.currentLyrics.collectAsStateWithLifecycle(initialValue = null)
-                                FilledIconButton(
+                                LiquidGlassButton(
                                     onClick = {
                                         menuState.show {
                                             com.metrolist.music.ui.menu.LyricsMenu(
@@ -1217,32 +1377,24 @@ fun BottomSheetPlayer(
                                             )
                                         }
                                     },
-                                    shape = favShape,
-                                    colors =
-                                        IconButtonDefaults.filledIconButtonColors(
-                                            containerColor = textButtonColor,
-                                            contentColor = iconButtonColor,
-                                        ),
+                                    shape = CircleShape,
                                     modifier = Modifier.size(42.dp),
                                 ) {
                                     Icon(
                                         painter = painterResource(R.drawable.more_horiz),
                                         contentDescription = null,
-                                        modifier = Modifier.size(24.dp),
+                                        tint = Color.White,
+                                        modifier = Modifier.size(22.dp),
                                     )
                                 }
                             } else {
-                                // For episodes, show saved state (inLibrary); for songs, show liked state
                                 val isEpisode = currentSong?.song?.isEpisode == true
                                 val isFavorite = if (isEpisode) currentSong?.song?.inLibrary != null else currentSong?.song?.liked == true
-                                FilledIconButton(
+                                LiquidGlassButton(
                                     onClick = playerConnection::toggleLike,
-                                    shape = favShape,
-                                    colors =
-                                        IconButtonDefaults.filledIconButtonColors(
-                                            containerColor = textButtonColor,
-                                            contentColor = iconButtonColor,
-                                        ),
+                                    shape = CircleShape,
+                                    isActive = isFavorite,
+                                    activeTint = MaterialTheme.colorScheme.error,
                                     modifier = Modifier.size(42.dp),
                                 ) {
                                     Icon(
@@ -1255,7 +1407,8 @@ fun BottomSheetPlayer(
                                                 },
                                             ),
                                         contentDescription = null,
-                                        modifier = Modifier.size(24.dp),
+                                        tint = if (isFavorite) Color.White else Color.White.copy(alpha = 0.85f),
+                                        modifier = Modifier.size(22.dp),
                                     )
                                 }
                             }
@@ -1264,52 +1417,40 @@ fun BottomSheetPlayer(
                 } else {
                     AnimatedContent(targetState = showInlineLyrics, label = "ShareButton") { showLyrics ->
                         if (showLyrics) {
-                            Box(
-                                modifier =
-                                    Modifier
-                                        .size(40.dp)
-                                        .clip(RoundedCornerShape(24.dp))
-                                        .background(textButtonColor)
-                                        .clickable { isFullScreen = !isFullScreen },
+                            LiquidGlassButton(
+                                onClick = { isFullScreen = !isFullScreen },
+                                shape = CircleShape,
+                                modifier = Modifier.size(42.dp),
                             ) {
                                 Icon(
                                     painter = painterResource(R.drawable.fullscreen),
                                     contentDescription = null,
-                                    tint = iconButtonColor,
-                                    modifier =
-                                        Modifier
-                                            .align(Alignment.Center)
-                                            .size(24.dp),
+                                    tint = Color.White,
+                                    modifier = Modifier.size(22.dp),
                                 )
                             }
                         } else {
-                            Box(
-                                modifier =
-                                    Modifier
-                                        .size(40.dp)
-                                        .clip(RoundedCornerShape(24.dp))
-                                        .background(textButtonColor)
-                                        .clickable {
-                                            val intent =
-                                                Intent().apply {
-                                                    action = Intent.ACTION_SEND
-                                                    type = "text/plain"
-                                                    putExtra(
-                                                        Intent.EXTRA_TEXT,
-                                                        "https://music.youtube.com/watch?v=${mediaMetadata.id}",
-                                                    )
-                                                }
-                                            context.startActivity(Intent.createChooser(intent, null))
-                                        },
+                            LiquidGlassButton(
+                                onClick = {
+                                    val intent =
+                                        Intent().apply {
+                                            action = Intent.ACTION_SEND
+                                            type = "text/plain"
+                                            putExtra(
+                                                Intent.EXTRA_TEXT,
+                                                "https://music.youtube.com/watch?v=${mediaMetadata.id}",
+                                            )
+                                        }
+                                    context.startActivity(Intent.createChooser(intent, null))
+                                },
+                                shape = CircleShape,
+                                modifier = Modifier.size(42.dp),
                             ) {
                                 Icon(
                                     painter = painterResource(R.drawable.share),
                                     contentDescription = null,
-                                    tint = iconButtonColor,
-                                    modifier =
-                                        Modifier
-                                            .align(Alignment.Center)
-                                            .size(24.dp),
+                                    tint = Color.White,
+                                    modifier = Modifier.size(22.dp),
                                 )
                             }
                         }
@@ -1320,38 +1461,32 @@ fun BottomSheetPlayer(
                     AnimatedContent(targetState = showInlineLyrics, label = "LikeButton") { showLyrics ->
                         if (showLyrics) {
                             val currentLyrics by playerConnection.currentLyrics.collectAsStateWithLifecycle(initialValue = null)
-                            Box(
-                                modifier =
-                                    Modifier
-                                        .size(40.dp)
-                                        .clip(RoundedCornerShape(24.dp))
-                                        .background(textButtonColor)
-                                        .clickable {
-                                            menuState.show {
-                                                com.metrolist.music.ui.menu.LyricsMenu(
-                                                    lyricsProvider = { currentLyrics },
-                                                    songProvider = { currentSong?.song },
-                                                    mediaMetadataProvider = { mediaMetadata },
-                                                    onDismiss = menuState::dismiss,
-                                                    onShowOffsetDialog = {
-                                                        bottomSheetPageState.show {
-                                                            ShowOffsetDialog(
-                                                                songProvider = { currentSong?.song },
-                                                            )
-                                                        }
-                                                    },
-                                                )
-                                            }
-                                        },
+                            LiquidGlassButton(
+                                onClick = {
+                                    menuState.show {
+                                        com.metrolist.music.ui.menu.LyricsMenu(
+                                            lyricsProvider = { currentLyrics },
+                                            songProvider = { currentSong?.song },
+                                            mediaMetadataProvider = { mediaMetadata },
+                                            onDismiss = menuState::dismiss,
+                                            onShowOffsetDialog = {
+                                                bottomSheetPageState.show {
+                                                    ShowOffsetDialog(
+                                                        songProvider = { currentSong?.song },
+                                                    )
+                                                }
+                                            },
+                                        )
+                                    }
+                                },
+                                shape = CircleShape,
+                                modifier = Modifier.size(42.dp),
                             ) {
                                 Icon(
                                     painter = painterResource(R.drawable.more_horiz),
                                     contentDescription = null,
-                                    tint = iconButtonColor,
-                                    modifier =
-                                        Modifier
-                                            .align(Alignment.Center)
-                                            .size(24.dp),
+                                    tint = Color.White,
+                                    modifier = Modifier.size(22.dp),
                                 )
                             }
                         } else {
@@ -1592,16 +1727,11 @@ fun BottomSheetPlayer(
                                 label = "nextButtonWeight",
                             )
 
-                            FilledIconButton(
+                            LiquidGlassButton(
                                 onClick = playerConnection::seekToPrevious,
                                 enabled = canSkipPrevious && !isListenTogetherGuest,
                                 shape = RoundedCornerShape(50),
                                 interactionSource = backInteractionSource,
-                                colors =
-                                    IconButtonDefaults.filledIconButtonColors(
-                                        containerColor = sideButtonContainerColor,
-                                        contentColor = sideButtonContentColor,
-                                    ),
                                 modifier =
                                     Modifier
                                         .height(68.dp)
@@ -1610,17 +1740,18 @@ fun BottomSheetPlayer(
                                 Icon(
                                     painter = painterResource(R.drawable.skip_previous),
                                     contentDescription = null,
+                                    tint = Color.White,
                                     modifier = Modifier.size(32.dp),
                                 )
                             }
 
                             Spacer(modifier = Modifier.width(8.dp))
 
-                            FilledIconButton(
+                            LiquidGlassButton(
                                 onClick = {
                                     if (isListenTogetherGuest) {
                                         playerConnection.toggleMute()
-                                        return@FilledIconButton
+                                        return@LiquidGlassButton
                                     }
                                     if (isCasting) {
                                         if (castIsPlaying) {
@@ -1637,11 +1768,7 @@ fun BottomSheetPlayer(
                                 },
                                 shape = RoundedCornerShape(50),
                                 interactionSource = playPauseInteractionSource,
-                                colors =
-                                    IconButtonDefaults.filledIconButtonColors(
-                                        containerColor = textButtonColor,
-                                        contentColor = iconButtonColor,
-                                    ),
+                                isAccented = true,
                                 modifier =
                                     Modifier
                                         .height(68.dp)
@@ -1667,6 +1794,7 @@ fun BottomSheetPlayer(
                                             } else {
                                                 if (effectiveIsPlaying) stringResource(R.string.pause) else stringResource(R.string.play)
                                             },
+                                        tint = Color.White,
                                         modifier = Modifier.size(32.dp),
                                     )
                                     Spacer(modifier = Modifier.width(8.dp))
@@ -1678,22 +1806,18 @@ fun BottomSheetPlayer(
                                                 if (effectiveIsPlaying) stringResource(R.string.pause) else stringResource(R.string.play)
                                             },
                                         style = MaterialTheme.typography.titleMedium,
+                                        color = Color.White,
                                     )
                                 }
                             }
 
                             Spacer(modifier = Modifier.width(8.dp))
 
-                            FilledIconButton(
+                            LiquidGlassButton(
                                 onClick = playerConnection::seekToNext,
                                 enabled = canSkipNext && !isListenTogetherGuest,
                                 shape = RoundedCornerShape(50),
                                 interactionSource = nextInteractionSource,
-                                colors =
-                                    IconButtonDefaults.filledIconButtonColors(
-                                        containerColor = sideButtonContainerColor,
-                                        contentColor = sideButtonContentColor,
-                                    ),
                                 modifier =
                                     Modifier
                                         .height(68.dp)
@@ -1702,6 +1826,7 @@ fun BottomSheetPlayer(
                                 Icon(
                                     painter = painterResource(R.drawable.skip_next),
                                     contentDescription = null,
+                                    tint = Color.White,
                                     modifier = Modifier.size(32.dp),
                                 )
                             }
@@ -1714,126 +1839,120 @@ fun BottomSheetPlayer(
                                     .fillMaxWidth()
                                     .padding(horizontal = PlayerHorizontalPadding),
                         ) {
-                            Box(modifier = Modifier.weight(1f)) {
-                                ResizableIconButton(
-                                    icon =
-                                        when (repeatMode) {
-                                            Player.REPEAT_MODE_OFF, Player.REPEAT_MODE_ALL -> R.drawable.repeat
-                                            Player.REPEAT_MODE_ONE -> R.drawable.repeat_one
-                                            else -> throw IllegalStateException()
-                                        },
-                                    color = TextBackgroundColor,
-                                    modifier =
-                                        Modifier
-                                            .size(32.dp)
-                                            .padding(4.dp)
-                                            .align(Alignment.Center)
-                                            .alpha(
-                                                if (isListenTogetherGuest || repeatMode == Player.REPEAT_MODE_OFF) 0.5f else 1f,
-                                            ),
+                            Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
+                                LiquidGlassButton(
+                                    onClick = { playerConnection.player.toggleRepeatMode() },
                                     enabled = !isListenTogetherGuest,
-                                    onClick = {
-                                        playerConnection.player.toggleRepeatMode()
-                                    },
-                                )
-                            }
-
-                            Box(modifier = Modifier.weight(1f)) {
-                                ResizableIconButton(
-                                    icon = R.drawable.skip_previous,
-                                    enabled = canSkipPrevious && !isListenTogetherGuest,
-                                    color = TextBackgroundColor,
-                                    modifier =
-                                        Modifier
-                                            .size(32.dp)
-                                            .align(Alignment.Center)
-                                            .alpha(if (isListenTogetherGuest) 0.5f else 1f),
-                                    onClick = playerConnection::seekToPrevious,
-                                )
-                            }
-
-                            Spacer(Modifier.width(8.dp))
-
-                            Box(
-                                modifier =
-                                    Modifier
-                                        .size(72.dp)
-                                        .clip(RoundedCornerShape(playPauseRoundness))
-                                        .background(textButtonColor)
-                                        .clickable {
-                                            if (isListenTogetherGuest) {
-                                                playerConnection.toggleMute()
-                                                return@clickable
+                                    shape = CircleShape,
+                                    isActive = repeatMode != Player.REPEAT_MODE_OFF,
+                                    activeTint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(46.dp),
+                                ) {
+                                    Icon(
+                                        painter = painterResource(
+                                            when (repeatMode) {
+                                                Player.REPEAT_MODE_OFF, Player.REPEAT_MODE_ALL -> R.drawable.repeat
+                                                Player.REPEAT_MODE_ONE -> R.drawable.repeat_one
+                                                else -> R.drawable.repeat
                                             }
-                                            if (isCasting) {
-                                                if (castIsPlaying) {
-                                                    castHandler?.pause()
-                                                } else {
-                                                    castHandler?.play()
-                                                }
-                                            } else if (playbackState == STATE_ENDED) {
-                                                playerConnection.player.seekTo(0, 0)
-                                                playerConnection.player.playWhenReady = true
-                                            } else {
-                                                playerConnection.player.togglePlayPause()
-                                            }
-                                        }
-                                        .focusRequester(focusRequester),
-                            ) {
-                                Image(
-                                    painter =
-                                        painterResource(
-                                            if (isListenTogetherGuest) {
-                                                if (isMuted) R.drawable.volume_off else R.drawable.volume_up
-                                            } else if (playbackState ==
-                                                STATE_ENDED
-                                            ) {
-                                                R.drawable.replay
-                                            } else if (effectiveIsPlaying) {
-                                                R.drawable.pause
-                                            } else {
-                                                R.drawable.play
-                                            },
                                         ),
+                                        contentDescription = null,
+                                        tint = if (repeatMode != Player.REPEAT_MODE_OFF) Color.White else Color.White.copy(alpha = 0.6f),
+                                        modifier = Modifier.size(24.dp),
+                                    )
+                                }
+                            }
+
+                            Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
+                                LiquidGlassButton(
+                                    onClick = playerConnection::seekToPrevious,
+                                    enabled = canSkipPrevious && !isListenTogetherGuest,
+                                    shape = CircleShape,
+                                    modifier = Modifier.size(54.dp),
+                                ) {
+                                    Icon(
+                                        painter = painterResource(R.drawable.skip_previous),
+                                        contentDescription = null,
+                                        tint = Color.White,
+                                        modifier = Modifier.size(28.dp),
+                                    )
+                                }
+                            }
+
+                            Spacer(Modifier.width(8.dp))
+
+                            LiquidGlassButton(
+                                onClick = {
+                                    if (isListenTogetherGuest) {
+                                        playerConnection.toggleMute()
+                                        return@LiquidGlassButton
+                                    }
+                                    if (isCasting) {
+                                        if (castIsPlaying) castHandler?.pause() else castHandler?.play()
+                                    } else if (playbackState == STATE_ENDED) {
+                                        playerConnection.player.seekTo(0, 0)
+                                        playerConnection.player.playWhenReady = true
+                                    } else {
+                                        playerConnection.player.togglePlayPause()
+                                    }
+                                },
+                                shape = CircleShape,
+                                isAccented = true,
+                                modifier = Modifier.size(76.dp).focusRequester(focusRequester),
+                            ) {
+                                Icon(
+                                    painter = painterResource(
+                                        if (isListenTogetherGuest) {
+                                            if (isMuted) R.drawable.volume_off else R.drawable.volume_up
+                                        } else if (playbackState == STATE_ENDED) {
+                                            R.drawable.replay
+                                        } else if (effectiveIsPlaying) {
+                                            R.drawable.pause
+                                        } else {
+                                            R.drawable.play
+                                        }
+                                    ),
                                     contentDescription = null,
-                                    colorFilter = ColorFilter.tint(iconButtonColor),
-                                    modifier =
-                                        Modifier
-                                            .align(Alignment.Center)
-                                            .size(36.dp),
+                                    tint = Color.White,
+                                    modifier = Modifier.size(36.dp),
                                 )
                             }
 
                             Spacer(Modifier.width(8.dp))
 
-                            Box(modifier = Modifier.weight(1f)) {
-                                ResizableIconButton(
-                                    icon = R.drawable.skip_next,
-                                    enabled = canSkipNext && !isListenTogetherGuest,
-                                    color = TextBackgroundColor,
-                                    modifier =
-                                        Modifier
-                                            .size(32.dp)
-                                            .align(Alignment.Center)
-                                            .alpha(if (isListenTogetherGuest) 0.5f else 1f),
+                            Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
+                                LiquidGlassButton(
                                     onClick = playerConnection::seekToNext,
-                                )
+                                    enabled = canSkipNext && !isListenTogetherGuest,
+                                    shape = CircleShape,
+                                    modifier = Modifier.size(54.dp),
+                                ) {
+                                    Icon(
+                                        painter = painterResource(R.drawable.skip_next),
+                                        contentDescription = null,
+                                        tint = Color.White,
+                                        modifier = Modifier.size(28.dp),
+                                    )
+                                }
                             }
 
-                            Box(modifier = Modifier.weight(1f)) {
-                                // For episodes, show saved state (inLibrary); for songs, show liked state
+                            Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
                                 val isEpisode = currentSong?.song?.isEpisode == true
                                 val isFavorite = if (isEpisode) currentSong?.song?.inLibrary != null else currentSong?.song?.liked == true
-                                ResizableIconButton(
-                                    icon = if (isFavorite) R.drawable.favorite else R.drawable.favorite_border,
-                                    color = if (isFavorite) MaterialTheme.colorScheme.error else TextBackgroundColor,
-                                    modifier =
-                                        Modifier
-                                            .size(32.dp)
-                                            .padding(4.dp)
-                                            .align(Alignment.Center),
+                                LiquidGlassButton(
                                     onClick = playerConnection::toggleLike,
-                                )
+                                    shape = CircleShape,
+                                    isActive = isFavorite,
+                                    activeTint = MaterialTheme.colorScheme.error,
+                                    modifier = Modifier.size(46.dp),
+                                ) {
+                                    Icon(
+                                        painter = painterResource(if (isFavorite) R.drawable.favorite else R.drawable.favorite_border),
+                                        contentDescription = null,
+                                        tint = if (isFavorite) Color.White else Color.White.copy(alpha = 0.6f),
+                                        modifier = Modifier.size(24.dp),
+                                    )
+                                }
                             }
                         }
                     }
@@ -1974,6 +2093,7 @@ fun BottomSheetPlayer(
             Queue(
                 state = queueSheetState,
                 playerBottomSheetState = state,
+                coverTint = gradientColors.firstOrNull() ?: androidx.compose.ui.graphics.Color.Unspecified,
                 background =
                     if (useBlackBackground) {
                         Color.Black
@@ -1991,6 +2111,7 @@ fun BottomSheetPlayer(
                     showInlineLyrics = !showInlineLyrics
                 },
             )
+        }
         }
     }
 }
@@ -2104,7 +2225,7 @@ fun InlineLyricsView(
     ) {
         when {
             lyrics == null -> {
-                ContainedLoadingIndicator()
+                ContainedMorphLoadingIndicator()
             }
 
             lyrics == LyricsEntity.LYRICS_NOT_FOUND -> {
@@ -2149,34 +2270,31 @@ private fun PlayerMoreMenuButton(
     val menuState = LocalMenuState.current
     val bottomSheetPageState = LocalBottomSheetPageState.current
 
-    Box(
-        contentAlignment = Alignment.Center,
-        modifier =
-            Modifier
-                .size(40.dp)
-                .clip(RoundedCornerShape(24.dp))
-                .background(textButtonColor)
-                .clickable {
-                    menuState.show {
-                        PlayerMenu(
-                            mediaMetadata = mediaMetadata,
-                            playerBottomSheetState = state,
-                            onShowDetailsDialog = {
-                                mediaMetadata.id.let {
-                                    bottomSheetPageState.show {
-                                        ShowMediaInfo(it)
-                                    }
-                                }
-                            },
-                            onDismiss = menuState::dismiss,
-                        )
-                    }
-                },
+    LiquidGlassButton(
+        onClick = {
+            menuState.show {
+                PlayerMenu(
+                    mediaMetadata = mediaMetadata,
+                    playerBottomSheetState = state,
+                    onShowDetailsDialog = {
+                        mediaMetadata.id.let {
+                            bottomSheetPageState.show {
+                                ShowMediaInfo(it)
+                            }
+                        }
+                    },
+                    onDismiss = menuState::dismiss,
+                )
+            }
+        },
+        shape = CircleShape,
+        modifier = Modifier.size(42.dp),
     ) {
-        Image(
+        Icon(
             painter = painterResource(R.drawable.more_horiz),
             contentDescription = null,
-            colorFilter = ColorFilter.tint(iconButtonColor),
+            tint = Color.White,
+            modifier = Modifier.size(22.dp),
         )
     }
 }

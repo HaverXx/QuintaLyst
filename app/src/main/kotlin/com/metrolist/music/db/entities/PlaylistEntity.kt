@@ -59,6 +59,9 @@ data class PlaylistEntity(
             else null
         }
 
+    val hasCustomThumbnail: Boolean
+        get() = isCustomPlaylistThumbnail(thumbnailUrl)
+
     fun localToggleLike() = copy(
         bookmarkedAt = if (bookmarkedAt != null) null else LocalDateTime.now()
     )
@@ -70,3 +73,12 @@ data class PlaylistEntity(
         }
     }
 }
+
+fun isCustomPlaylistThumbnail(url: String?): Boolean {
+    if (url.isNullOrBlank()) return false
+    return url.startsWith("file:") ||
+            url.contains("playlist_covers") ||
+            url.contains("studio_square_thumbnail") ||
+            url.contains("content://com.metrolist.music")
+}
+

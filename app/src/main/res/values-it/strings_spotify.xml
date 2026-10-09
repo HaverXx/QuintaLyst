@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="import_from_spotify">Importa da Spotify</string>
+    <string name="playlist_import_error">Importazione non riuscita: %1$s</string>
+    <string name="spotify_playlist_url">URL o ID della playlist Spotify</string>
+    <string name="spotify_import_searching">Ricerca dei brani su YouTube Music…</string>
+    <string name="spotify_import_done">Importazione completata: %1$d brani trovati su %2$d</string>
+    <string name="spotify_import_invalid_url">URL di Spotify non valido</string>
+    <string name="spotify_hub_title">Spotify</string>
+    <string name="spotify_import_card_desc">Porta le tue playlist con un link</string>
+    <string name="spotify_jam_card_title">Unisciti a una Jam</string>
+    <string name="spotify_jam_card_desc">Incolla il link della Jam di un amico</string>
+    <string name="spotify_jam_dialog_title">Unisciti a una Jam di Spotify</string>
+    <string name="spotify_jam_hint">Link della Jam</string>
+    <string name="spotify_jam_help">Incolla il link condiviso dall\'host. La coda viene salvata come playlist e cercata su YouTube.</string>
+    <string name="spotify_jam_join">Unisciti</string>
+    <string name="spotify_jam_done">Jam salvata: %1$d brani</string>
+    <string name="spotify_jam_hidden">Questa Jam non mostra la coda senza accesso a Spotify. Chiedi all\'host di condividere la coda come playlist e importala qui.</string>
+</resources>

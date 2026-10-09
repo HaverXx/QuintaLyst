@@ -31,6 +31,9 @@ data class ReleaseAsset(
 )
 
 object Updater {
+    /** Esta es una versión personalizada: las releases del repo oficial de Metrolist no deben avisar, descargarse ni afectarla. */
+    private const val UPSTREAM_UPDATES_DISABLED = true
+
     private val client = HttpClient()
     var lastCheckTime = -1L
         private set
@@ -123,7 +126,7 @@ object Updater {
      * Fetch latest release from GitHub API
      */
     suspend fun getLatestRelease(forceRefresh: Boolean = false): Result<ReleaseInfo> =
-        withContext(Dispatchers.IO) {
+        if (UPSTREAM_UPDATES_DISABLED) Result.failure(UnsupportedOperationException("Updates disabled")) else withContext(Dispatchers.IO) {
             runCatching {
                 // Return cached if available and not forcing refresh
                 if (cachedReleaseInfo != null && !forceRefresh) {
@@ -152,7 +155,7 @@ object Updater {
      * Fetch all releases from GitHub API (paginated)
      */
     suspend fun getAllReleases(forceRefresh: Boolean = false): Result<List<ReleaseInfo>> =
-        withContext(Dispatchers.IO) {
+        if (UPSTREAM_UPDATES_DISABLED) Result.failure(UnsupportedOperationException("Updates disabled")) else withContext(Dispatchers.IO) {
             runCatching {
                 if (cachedAllReleases.isNotEmpty() && !forceRefresh) {
                     return@runCatching cachedAllReleases
@@ -209,7 +212,7 @@ object Updater {
      * Returns the latest stable KMP release when it includes an Android APK.
      */
     suspend fun getLatestKmpRelease(): Result<ReleaseInfo?> =
-        withContext(Dispatchers.IO) {
+        if (UPSTREAM_UPDATES_DISABLED) Result.success(null) else withContext(Dispatchers.IO) {
             runCatching {
                 parseKmpRelease(client.get(KMP_LATEST_RELEASE_URL).bodyAsText())
             }
@@ -230,7 +233,7 @@ object Updater {
      * Check if update is needed (respects 2-hour cache)
      */
     suspend fun checkForUpdate(forceRefresh: Boolean = false): Result<Pair<ReleaseInfo?, Boolean>> =
-        withContext(Dispatchers.IO) {
+        if (UPSTREAM_UPDATES_DISABLED) Result.success(null to false) else withContext(Dispatchers.IO) {
             runCatching {
                 // Check if we should fetch (2 hour interval)
                 val shouldFetch = forceRefresh || 

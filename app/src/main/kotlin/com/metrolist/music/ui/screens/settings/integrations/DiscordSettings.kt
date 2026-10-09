@@ -1,5 +1,7 @@
 package com.metrolist.music.ui.screens.settings.integrations
 
+import com.metrolist.music.ui.component.GlassOutlinedButton
+import com.metrolist.music.ui.component.GlassCard
 import android.app.Activity
 import android.content.Intent
 import androidx.compose.animation.AnimatedVisibility
@@ -250,7 +252,7 @@ fun DiscordSettings(
         )
 
         AnimatedVisibility(visible = !infoDismissed) {
-            Card(
+            GlassCard(
                 colors =
                     CardDefaults.cardColors(
                         containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
@@ -299,7 +301,8 @@ fun DiscordSettings(
         }
 
         if (!lastErrorText.isNullOrBlank()) {
-            Card(
+            GlassCard(
+                tint = MaterialTheme.colorScheme.error,
                 colors = CardDefaults.cardColors(
                     containerColor = MaterialTheme.colorScheme.errorContainer,
                 ),
@@ -343,7 +346,7 @@ fun DiscordSettings(
             }
         }
 
-        Card(
+        GlassCard(
             shape = RoundedCornerShape(28.dp),
             colors =
                 CardDefaults.cardColors(
@@ -419,7 +422,7 @@ fun DiscordSettings(
                 }
 
                 if (isLoggedIn) {
-                    OutlinedButton(onClick = {
+                    GlassOutlinedButton(onClick = {
                         discordName = ""
                         discordUsername = ""
                         discordAvatar = ""
@@ -445,7 +448,7 @@ fun DiscordSettings(
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
                     if (!isBusy) {
-                        OutlinedButton(
+                        GlassOutlinedButton(
                             onClick = {
                                 isBusy = true
                                 val activity = findActivity(context)
@@ -1104,7 +1107,7 @@ fun RichPresence(
             Spacer(modifier = Modifier.height(16.dp))
 
             if (btn1Enabled) {
-                OutlinedButton(
+                GlassOutlinedButton(
                     enabled = song != null,
                     onClick = {
                         val intent =
@@ -1121,7 +1124,7 @@ fun RichPresence(
             }
 
             if (btn2Enabled) {
-                OutlinedButton(
+                GlassOutlinedButton(
                     onClick = {
                         val intent =
                             Intent(

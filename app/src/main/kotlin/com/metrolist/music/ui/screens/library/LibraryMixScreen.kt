@@ -5,6 +5,7 @@
 
 package com.metrolist.music.ui.screens.library
 
+import com.metrolist.music.ui.component.LiquidGlassButton
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
@@ -1053,8 +1054,9 @@ fun LibraryMixScreen(
         }
 
         // Always visible + button (no scroll hiding)
-        FloatingActionButton(
+        LiquidGlassButton(
             onClick = { showCreatePlaylistDialog = true },
+            shape = androidx.compose.foundation.shape.CircleShape,
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .windowInsetsPadding(
@@ -1062,6 +1064,7 @@ fun LibraryMixScreen(
                         .only(WindowInsetsSides.Bottom + WindowInsetsSides.Horizontal)
                 )
                 .padding(16.dp)
+                .size(56.dp)
         ) {
             Icon(
                 painter = painterResource(R.drawable.add),

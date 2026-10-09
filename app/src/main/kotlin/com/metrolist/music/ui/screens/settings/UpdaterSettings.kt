@@ -5,6 +5,7 @@
 
 package com.metrolist.music.ui.screens.settings
 
+import com.metrolist.music.ui.component.GlassButton
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsetsSides
@@ -216,7 +217,7 @@ fun UpdaterScreen(
 
         if (updateAvailable && latestVersion != null) {
             Spacer(Modifier.height(16.dp))
-            Button(
+            GlassButton(
                 onClick = { showChangelog = !showChangelog },
                 modifier =
                     Modifier

@@ -5,11 +5,17 @@
 
 package com.metrolist.music.ui.screens.settings
 
+import com.metrolist.music.ui.component.GlassOutlinedButton
+import com.metrolist.music.ui.component.GlassButton
 import android.os.Build
+import coil3.request.CachePolicy
+import coil3.request.ImageRequest
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -18,13 +24,21 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderState
 import androidx.compose.material3.SnackbarHostState
@@ -69,6 +83,10 @@ import com.metrolist.music.constants.GridItemsSizeKey
 import com.metrolist.music.constants.HidePlayerThumbnailKey
 import com.metrolist.music.constants.HideStatusBarOnFullscreenKey
 import com.metrolist.music.constants.LibraryFilter
+import com.metrolist.music.constants.LiquidGlassKey
+import com.metrolist.music.constants.RetroDynamicLabelKey
+import com.metrolist.music.constants.RetroStyleKey
+import com.metrolist.music.constants.PlayerGlassOpacityKey
 import com.metrolist.music.constants.ListenTogetherInTopBarKey
 import com.metrolist.music.constants.LyricsAnimationStyle
 import com.metrolist.music.constants.LyricsAnimationStyleKey
@@ -102,6 +120,40 @@ import com.metrolist.music.constants.SwipeToRemoveSongKey
 import com.metrolist.music.constants.SwipeToSongKey
 import com.metrolist.music.constants.UseNewMiniPlayerDesignKey
 import com.metrolist.music.constants.UseNewPlayerDesignKey
+import com.metrolist.music.constants.DynamicBackgroundKey
+import com.metrolist.music.constants.DynamicBgBlurKey
+import com.metrolist.music.constants.DynamicBgIntensityKey
+import com.metrolist.music.constants.DynamicBgSpeedKey
+import com.metrolist.music.constants.ThumbnailCornerRadiusKey
+import com.metrolist.music.constants.CustomAppTitleKey
+import com.metrolist.music.constants.ShowSpeedDialKey
+import com.metrolist.music.constants.ShowQuickPicksKey
+import com.metrolist.music.constants.ShowDailyDiscoverKey
+import com.metrolist.music.constants.ShowKeepListeningKey
+import com.metrolist.music.constants.ShowAccountPlaylistsKey
+import com.metrolist.music.constants.ShowForgottenFavoritesKey
+import com.metrolist.music.constants.ShowFromTheCommunityKey
+import com.metrolist.music.constants.ShowMoodAndGenresKey
+import com.metrolist.music.constants.DynamicBackgroundStyle
+import com.metrolist.music.constants.DynamicBackgroundStyleKey
+import com.metrolist.music.constants.CustomAppIconPathKey
+import com.metrolist.music.constants.CustomAppIconTimestampKey
+import com.metrolist.music.constants.HomeWallpaperKey
+import com.metrolist.music.constants.HomeWallpaperOpacityKey
+import com.metrolist.music.constants.HomeWallpaperBlurKey
+import com.metrolist.music.utils.IconUtils
+import java.io.File
+import android.net.Uri
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.width
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.material3.Button
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.OutlinedButton
+import coil3.compose.AsyncImage
 import com.metrolist.music.ui.component.DefaultDialog
 import com.metrolist.music.ui.component.EnumDialog
 import com.metrolist.music.ui.component.IconButton
@@ -113,7 +165,6 @@ import com.metrolist.music.ui.component.WavySlider
 import com.metrolist.music.ui.theme.DefaultThemeColor
 import com.metrolist.music.ui.theme.PlayerSliderColors
 import com.metrolist.music.ui.utils.backToMain
-import com.metrolist.music.utils.IconUtils
 import com.metrolist.music.utils.rememberEnumPreference
 import com.metrolist.music.utils.rememberPreference
 import kotlinx.coroutines.launch
@@ -151,13 +202,47 @@ fun AppearanceSettings(
             EnableLandscapeScalingKey,
             defaultValue = false,
         )
-    val (selectedThemeColorInt) =
+    val (selectedThemeColorInt, onSelectedThemeColorChange) =
         rememberPreference(
             SelectedThemeColorKey,
             defaultValue = DefaultThemeColor.toArgb(),
         )
     // Check if user has selected a custom color (not the default/dynamic color)
     val isUsingCustomColor = selectedThemeColorInt != DefaultThemeColor.toArgb()
+
+    val (customAppTitle, onCustomAppTitleChange) = rememberPreference(CustomAppTitleKey, defaultValue = "")
+    var showCustomAppTitleDialog by rememberSaveable { mutableStateOf(false) }
+    var showAppIconDialog by rememberSaveable { mutableStateOf(false) }
+    var showMenuSectionsDialog by rememberSaveable { mutableStateOf(false) }
+
+    val (customAppIconPath, onCustomAppIconPathChange) = rememberPreference(CustomAppIconPathKey, defaultValue = "")
+    val (customAppIconTimestamp, onCustomAppIconTimestampChange) = rememberPreference(CustomAppIconTimestampKey, defaultValue = 0L)
+    val customIconFile = remember(customAppIconPath, customAppIconTimestamp) {
+        IconUtils.getCustomIconFile(iconContext, customAppIconPath)?.takeIf { it.exists() }
+    }
+
+    val pickImageLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        if (uri != null) {
+            val savedPath = IconUtils.saveCustomIconFromUri(iconContext, uri)
+            if (savedPath != null) {
+                val newTimestamp = System.currentTimeMillis()
+                onCustomAppIconPathChange(savedPath)
+                onCustomAppIconTimestampChange(newTimestamp)
+                Toast.makeText(iconContext, iconContext.getString(R.string.custom_app_icon_gallery), Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    val (showSpeedDial, onShowSpeedDialChange) = rememberPreference(ShowSpeedDialKey, defaultValue = true)
+    val (showQuickPicks, onShowQuickPicksChange) = rememberPreference(ShowQuickPicksKey, defaultValue = true)
+    val (showDailyDiscover, onShowDailyDiscoverChange) = rememberPreference(ShowDailyDiscoverKey, defaultValue = true)
+    val (showKeepListening, onShowKeepListeningChange) = rememberPreference(ShowKeepListeningKey, defaultValue = true)
+    val (showAccountPlaylists, onShowAccountPlaylistsChange) = rememberPreference(ShowAccountPlaylistsKey, defaultValue = true)
+    val (showForgottenFavorites, onShowForgottenFavoritesChange) = rememberPreference(ShowForgottenFavoritesKey, defaultValue = true)
+    val (showFromTheCommunity, onShowFromTheCommunityChange) = rememberPreference(ShowFromTheCommunityKey, defaultValue = true)
+    val (showMoodAndGenres, onShowMoodAndGenresChange) = rememberPreference(ShowMoodAndGenresKey, defaultValue = true)
 
     val (useNewPlayerDesign, onUseNewPlayerDesignChange) =
         rememberPreference(
@@ -177,6 +262,30 @@ fun AppearanceSettings(
 
     var showMiniPlayerBackgroundDialog by rememberSaveable { mutableStateOf(false) }
 
+    val (liquidGlass, onLiquidGlassChange) =
+        rememberPreference(
+            LiquidGlassKey,
+            defaultValue = true,
+        )
+    val (retroStyle, onRetroStyleChange) =
+        rememberPreference(
+            RetroStyleKey,
+            defaultValue = false,
+        )
+    val (retroDynamicLabel, onRetroDynamicLabelChange) =
+        rememberPreference(
+            RetroDynamicLabelKey,
+            defaultValue = true,
+        )
+    val appStyle = if (retroStyle) 2 else if (liquidGlass) 1 else 0
+    val onAppStyleSelected: (Int) -> Unit = { style ->
+        onRetroStyleChange(style == 2)
+        onLiquidGlassChange(style == 1)
+    }
+    val (miniPlayerDim, onMiniPlayerDimChange) =
+        rememberPreference(com.metrolist.music.constants.MiniPlayerDimKey, defaultValue = 0f)
+    val (playerGlassOpacity, onPlayerGlassOpacityChange) =
+        rememberPreference(PlayerGlassOpacityKey, defaultValue = 0.55f)
     val (useNewMiniPlayerDesign, onUseNewMiniPlayerDesignChange) =
         rememberPreference(
             UseNewMiniPlayerDesignKey,
@@ -277,6 +386,9 @@ fun AppearanceSettings(
             SlimNavBarKey,
             defaultValue = false,
         )
+
+    // Image corner radius pref (stored as Dp value as float)
+    val (thumbnailCornerRadiusPref, onThumbnailCornerRadiusChange) = rememberPreference(ThumbnailCornerRadiusKey, defaultValue = 24f)
 
     val (densityScale, onDensityScaleChange) = rememberPreference(DensityScaleKey, defaultValue = 1f)
     var showDensityScaleDialog by rememberSaveable { mutableStateOf(false) }
@@ -607,6 +719,249 @@ fun AppearanceSettings(
         )
     }
 
+    if (showCustomAppTitleDialog) {
+        var tempTitle by rememberSaveable { mutableStateOf(customAppTitle) }
+        DefaultDialog(
+            onDismiss = { showCustomAppTitleDialog = false },
+            buttons = {
+                TextButton(onClick = {
+                    onCustomAppTitleChange("")
+                    showCustomAppTitleDialog = false
+                }) {
+                    Text(stringResource(R.string.reset))
+                }
+                Spacer(modifier = Modifier.weight(1f))
+                TextButton(onClick = { showCustomAppTitleDialog = false }) {
+                    Text(stringResource(android.R.string.cancel))
+                }
+                TextButton(onClick = {
+                    onCustomAppTitleChange(tempTitle.trim())
+                    showCustomAppTitleDialog = false
+                }) {
+                    Text(stringResource(android.R.string.ok))
+                }
+            },
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text(
+                    text = stringResource(R.string.app_custom_name),
+                    style = MaterialTheme.typography.headlineSmall,
+                    modifier = Modifier.padding(bottom = 16.dp),
+                )
+                OutlinedTextField(
+                    value = tempTitle,
+                    onValueChange = { tempTitle = it },
+                    label = { Text(stringResource(R.string.app_custom_name)) },
+                    placeholder = { Text(stringResource(R.string.app_name)) },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+        }
+    }
+
+    if (showAppIconDialog) {
+        DefaultDialog(
+            onDismiss = { showAppIconDialog = false },
+            buttons = {
+                TextButton(onClick = { showAppIconDialog = false }) {
+                    Text(stringResource(android.R.string.ok))
+                }
+            },
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text(
+                    text = stringResource(R.string.app_icon),
+                    style = MaterialTheme.typography.headlineSmall,
+                    modifier = Modifier.padding(bottom = 16.dp),
+                )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(12.dp))
+                        .clickable {
+                            onEnableDynamicIconChange(true)
+                            showAppIconDialog = false
+                        }
+                        .padding(12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    RadioButton(
+                        selected = customIconFile == null && enableDynamicIcon,
+                        onClick = {
+                            onEnableDynamicIconChange(true)
+                            showAppIconDialog = false
+                        },
+                        modifier = Modifier.padding(end = 12.dp),
+                    )
+                    Column {
+                        Text("QuintaLyst (Material You)", style = MaterialTheme.typography.bodyLarge)
+                        Text("Icono adaptativo dinámico", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                }
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(12.dp))
+                        .clickable {
+                            onEnableDynamicIconChange(false)
+                            showAppIconDialog = false
+                        }
+                        .padding(12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    RadioButton(
+                        selected = customIconFile == null && !enableDynamicIcon,
+                        onClick = {
+                            onEnableDynamicIconChange(false)
+                            showAppIconDialog = false
+                        },
+                        modifier = Modifier.padding(end = 12.dp),
+                    )
+                    Column {
+                        Text("QuintaLyst (Clásico)", style = MaterialTheme.typography.bodyLarge)
+                        Text("Icono estático original", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Text(
+                    text = stringResource(R.string.custom_app_icon_gallery),
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.padding(bottom = 4.dp),
+                )
+                Text(
+                    text = stringResource(R.string.custom_icon_desc),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(bottom = 12.dp),
+                )
+
+                if (customIconFile != null) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    ) {
+                        AsyncImage(
+                            model = ImageRequest.Builder(iconContext)
+                                .data(customIconFile)
+                                .memoryCacheKey("custom_icon_${customAppIconPath}_${customAppIconTimestamp}")
+                                .diskCachePolicy(CachePolicy.DISABLED)
+                                .build(),
+                            contentDescription = stringResource(R.string.custom_app_icon_gallery),
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier
+                                .size(64.dp)
+                                .clip(RoundedCornerShape(16.dp))
+                                .border(1.5.dp, MaterialTheme.colorScheme.primary, RoundedCornerShape(16.dp)),
+                        )
+                        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                            GlassButton(
+                                onClick = {
+                                    val added = IconUtils.addCustomIconShortcut(iconContext, customAppTitle, customAppIconPath)
+                                    if (added) {
+                                        Toast.makeText(iconContext, iconContext.getString(R.string.shortcut_requested), Toast.LENGTH_SHORT).show()
+                                    }
+                                },
+                                modifier = Modifier.fillMaxWidth(),
+                            ) {
+                                Text(stringResource(R.string.add_icon_to_home_screen))
+                            }
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            ) {
+                                GlassOutlinedButton(
+                                    onClick = { pickImageLauncher.launch("image/*") },
+                                    modifier = Modifier.weight(1f),
+                                ) {
+                                    Text("Cambiar")
+                                }
+                                TextButton(
+                                    onClick = {
+                                        IconUtils.deleteCustomIcon(iconContext)
+                                        onCustomAppIconPathChange("")
+                                        onCustomAppIconTimestampChange(System.currentTimeMillis())
+                                    },
+                                    modifier = Modifier.weight(1f),
+                                ) {
+                                    Text(stringResource(R.string.remove_custom_icon))
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    GlassButton(
+                        onClick = { pickImageLauncher.launch("image/*") },
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Icon(painter = painterResource(R.drawable.insert_photo), contentDescription = null, modifier = Modifier.size(18.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(stringResource(R.string.choose_from_gallery))
+                    }
+                }
+            }
+        }
+    }
+
+    if (showMenuSectionsDialog) {
+        DefaultDialog(
+            onDismiss = { showMenuSectionsDialog = false },
+            buttons = {
+                TextButton(onClick = { showMenuSectionsDialog = false }) {
+                    Text(stringResource(android.R.string.ok))
+                }
+            },
+        ) {
+            Column(
+                modifier = Modifier
+                    .padding(16.dp)
+                    .verticalScroll(rememberScrollState()),
+            ) {
+                Text(
+                    text = stringResource(R.string.home_sections),
+                    style = MaterialTheme.typography.headlineSmall,
+                    modifier = Modifier.padding(bottom = 12.dp),
+                )
+                listOf(
+                    Pair(stringResource(R.string.section_speed_dial), Pair(showSpeedDial, onShowSpeedDialChange)),
+                    Pair(stringResource(R.string.section_quick_picks), Pair(showQuickPicks, onShowQuickPicksChange)),
+                    Pair(stringResource(R.string.section_daily_discover), Pair(showDailyDiscover, onShowDailyDiscoverChange)),
+                    Pair(stringResource(R.string.section_keep_listening), Pair(showKeepListening, onShowKeepListeningChange)),
+                    Pair(stringResource(R.string.section_account_playlists), Pair(showAccountPlaylists, onShowAccountPlaylistsChange)),
+                    Pair(stringResource(R.string.section_forgotten_favorites), Pair(showForgottenFavorites, onShowForgottenFavoritesChange)),
+                    Pair(stringResource(R.string.section_from_the_community), Pair(showFromTheCommunity, onShowFromTheCommunityChange)),
+                    Pair(stringResource(R.string.section_mood_and_genres), Pair(showMoodAndGenres, onShowMoodAndGenresChange)),
+                ).forEach { (title, state) ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(title, style = MaterialTheme.typography.bodyLarge)
+                        Switch(
+                            checked = state.first,
+                            onCheckedChange = state.second,
+                            thumbContent = {
+                                Icon(
+                                    painter = painterResource(if (state.first) R.drawable.check else R.drawable.close),
+                                    contentDescription = null,
+                                    modifier = Modifier.size(SwitchDefaults.IconSize),
+                                )
+                            },
+                        )
+                    }
+                }
+            }
+        }
+    }
+
     var showDefaultChipDialog by rememberSaveable {
         mutableStateOf(false)
     }
@@ -905,6 +1260,136 @@ fun AppearanceSettings(
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 16.dp),
     ) {
+        // ─── Fondo de la app (color sólido / gradiente / álbum / foto propia) ───
+        AppBackgroundSettingsGroup()
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // ─── Image appearance ──────────────────────────────────────────────────
+        Material3SettingsGroup(
+            title = "Imágenes",
+            items = buildList {
+                add(
+                    Material3SettingsItem(
+                        icon = painterResource(R.drawable.insert_photo),
+                        title = { Text("Redondeo de imágenes: ${thumbnailCornerRadiusPref.toInt()}dp") },
+                        description = {
+                            Slider(
+                                value = thumbnailCornerRadiusPref,
+                                onValueChange = onThumbnailCornerRadiusChange,
+                                valueRange = 0f..50f,
+                                modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
+                            )
+                        },
+                    ),
+                )
+            },
+        )
+
+        // ─── Accent Color ───────────────────────────────────────────────────────
+        Material3SettingsGroup(
+            title = stringResource(R.string.accent_color),
+            items = buildList {
+                add(
+                    Material3SettingsItem(
+                        icon = painterResource(R.drawable.palette),
+                        title = { Text(stringResource(R.string.accent_color)) },
+                        description = {
+                            Column(modifier = Modifier.padding(top = 8.dp)) {
+                                Text(
+                                    text = if (isUsingCustomColor) "Color personalizado seleccionado" else "Color dinámico activo (sigue portada/sistema)",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.padding(bottom = 8.dp),
+                                )
+                                LazyRow(
+                                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                                    contentPadding = PaddingValues(vertical = 4.dp),
+                                ) {
+                                    items(PaletteColors) { palette ->
+                                        val isDynamicPalette = palette.seedColor == Color.Transparent
+                                        val isSelected = if (isDynamicPalette) {
+                                            selectedThemeColorInt == DefaultThemeColor.toArgb()
+                                        } else {
+                                            selectedThemeColorInt == palette.seedColor.toArgb()
+                                        }
+                                        val color = if (isDynamicPalette) MaterialTheme.colorScheme.primary else palette.seedColor
+                                        Box(
+                                            modifier = Modifier
+                                                .size(36.dp)
+                                                .clip(CircleShape)
+                                                .background(color)
+                                                .border(
+                                                    width = if (isSelected) 3.dp else 1.dp,
+                                                    color = if (isSelected) MaterialTheme.colorScheme.onSurface else Color.White.copy(alpha = 0.35f),
+                                                    shape = CircleShape,
+                                                )
+                                                .clickable {
+                                                    val colorToSave = if (isDynamicPalette) DefaultThemeColor else palette.seedColor
+                                                    onSelectedThemeColorChange(colorToSave.toArgb())
+                                                    onDynamicThemeChange(isDynamicPalette)
+                                                },
+                                            contentAlignment = Alignment.Center,
+                                        ) {
+                                            if (isSelected) {
+                                                Icon(
+                                                    painter = painterResource(R.drawable.check),
+                                                    contentDescription = null,
+                                                    tint = if (color.luminance() > 0.5f) Color.Black else Color.White,
+                                                    modifier = Modifier.size(18.dp),
+                                                )
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                    ),
+                )
+            },
+        )
+
+        // ─── App Name & Icon ────────────────────────────────────────────────────
+        Material3SettingsGroup(
+            title = stringResource(R.string.app_custom_name),
+            items = buildList {
+                add(
+                    Material3SettingsItem(
+                        icon = painterResource(R.drawable.edit),
+                        title = { Text(stringResource(R.string.app_custom_name)) },
+                        description = {
+                            Text(if (customAppTitle.isNotBlank()) customAppTitle else stringResource(R.string.app_name))
+                        },
+                        onClick = { showCustomAppTitleDialog = true },
+                    ),
+                )
+                add(
+                    Material3SettingsItem(
+                        icon = painterResource(R.drawable.palette),
+                        title = { Text(stringResource(R.string.app_icon)) },
+                        description = {
+                            Text(if (customIconFile != null) stringResource(R.string.custom_app_icon_gallery) else if (enableDynamicIcon) "Dinámico (Material You)" else "Clásico (Estático)")
+                        },
+                        onClick = { showAppIconDialog = true },
+                    ),
+                )
+            },
+        )
+
+        // ─── Menu & Navigation Sections ─────────────────────────────────────────
+        Material3SettingsGroup(
+            title = stringResource(R.string.menu_sections_settings),
+            items = buildList {
+                add(
+                    Material3SettingsItem(
+                        icon = painterResource(R.drawable.tune),
+                        title = { Text(stringResource(R.string.menu_sections_settings)) },
+                        description = { Text(stringResource(R.string.menu_sections_settings_desc)) },
+                        onClick = { showMenuSectionsDialog = true },
+                    ),
+                )
+            },
+        )
+
         Material3SettingsGroup(
             title = stringResource(R.string.theme),
             items =
@@ -1028,6 +1513,82 @@ fun AppearanceSettings(
             )
 
         Material3SettingsGroup(
+            title = stringResource(id = R.string.app_style),
+            items =
+                buildList {
+                    add(
+                        Material3SettingsItem(
+                            icon = painterResource(R.drawable.nav_bar),
+                            title = { Text(stringResource(R.string.app_style_original)) },
+                            description = { Text(stringResource(R.string.app_style_original_desc)) },
+                            trailingContent = { RadioButton(selected = appStyle == 0, onClick = null) },
+                            onClick = { onAppStyleSelected(0) },
+                        ),
+                    )
+                    add(
+                        Material3SettingsItem(
+                            icon = painterResource(R.drawable.nav_bar),
+                            title = { Text(stringResource(R.string.liquid_glass)) },
+                            description = { Text(stringResource(R.string.liquid_glass_desc)) },
+                            trailingContent = { RadioButton(selected = appStyle == 1, onClick = null) },
+                            onClick = { onAppStyleSelected(1) },
+                        ),
+                    )
+                    if (appStyle == 1) {
+                        add(
+                            Material3SettingsItem(
+                                icon = painterResource(R.drawable.contrast),
+                                title = { Text("Opacidad del cristal de Reproduciendo: ${(playerGlassOpacity * 100).toInt()}%") },
+                                description = {
+                                    androidx.compose.material3.Slider(
+                                        value = playerGlassOpacity.coerceIn(0.1f, 1f),
+                                        onValueChange = onPlayerGlassOpacityChange,
+                                        valueRange = 0.1f..1f,
+                                        modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
+                                    )
+                                },
+                            ),
+                        )
+                    }
+                    add(
+                        Material3SettingsItem(
+                            icon = painterResource(R.drawable.nav_bar),
+                            title = { Text(stringResource(R.string.retro_style)) },
+                            description = { Text(stringResource(R.string.retro_style_desc)) },
+                            trailingContent = { RadioButton(selected = appStyle == 2, onClick = null) },
+                            onClick = { onAppStyleSelected(2) },
+                        ),
+                    )
+                    if (appStyle == 2) {
+                        add(
+                            Material3SettingsItem(
+                                icon = painterResource(R.drawable.gradient),
+                                title = { Text(stringResource(R.string.retro_label_dynamic)) },
+                                description = { Text(stringResource(R.string.retro_label_dynamic_desc)) },
+                                trailingContent = {
+                                    Switch(
+                                        checked = retroDynamicLabel,
+                                        onCheckedChange = onRetroDynamicLabelChange,
+                                        thumbContent = {
+                                            Icon(
+                                                painter =
+                                                    painterResource(
+                                                        id = if (retroDynamicLabel) R.drawable.check else R.drawable.close,
+                                                    ),
+                                                contentDescription = null,
+                                                modifier = Modifier.size(SwitchDefaults.IconSize),
+                                            )
+                                        },
+                                    )
+                                },
+                                onClick = { onRetroDynamicLabelChange(!retroDynamicLabel) },
+                            ),
+                        )
+                    }
+                },
+        )
+
+        Material3SettingsGroup(
             title = stringResource(id = R.string.mini_player),
             items =
                 buildList {
@@ -1091,6 +1652,21 @@ fun AppearanceSettings(
                                 )
                             },
                             onClick = { if (useNewMiniPlayerDesign) showMiniPlayerBackgroundDialog = true },
+                        ),
+                    )
+                    add(
+                        Material3SettingsItem(
+                            icon = painterResource(R.drawable.contrast),
+                            title = { Text("Oscurecer barra de reproducción: ${(miniPlayerDim * 100).toInt()}%") },
+                            description = {
+                                androidx.compose.material3.Slider(
+                                    value = miniPlayerDim.coerceIn(0f, 1f),
+                                    onValueChange = onMiniPlayerDimChange,
+                                    valueRange = 0f..1f,
+                                    enabled = useNewMiniPlayerDesign,
+                                    modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
+                                )
+                            },
                         ),
                     )
                 },
@@ -1721,119 +2297,6 @@ fun AppearanceSettings(
                 ),
         )
 
-        Spacer(modifier = Modifier.height(27.dp))
-
-        Material3SettingsGroup(
-            title = stringResource(R.string.auto_playlists),
-            items =
-                listOf(
-                    Material3SettingsItem(
-                        icon = painterResource(R.drawable.favorite),
-                        title = { Text(stringResource(R.string.show_liked_playlist)) },
-                        trailingContent = {
-                            Switch(
-                                checked = showLikedPlaylist,
-                                onCheckedChange = onShowLikedPlaylistChange,
-                                thumbContent = {
-                                    Icon(
-                                        painter =
-                                            painterResource(
-                                                id = if (showLikedPlaylist) R.drawable.check else R.drawable.close,
-                                            ),
-                                        contentDescription = null,
-                                        modifier = Modifier.size(SwitchDefaults.IconSize),
-                                    )
-                                },
-                            )
-                        },
-                        onClick = { onShowLikedPlaylistChange(!showLikedPlaylist) },
-                    ),
-                    Material3SettingsItem(
-                        icon = painterResource(R.drawable.offline),
-                        title = { Text(stringResource(R.string.show_downloaded_playlist)) },
-                        trailingContent = {
-                            Switch(
-                                checked = showDownloadedPlaylist,
-                                onCheckedChange = onShowDownloadedPlaylistChange,
-                                thumbContent = {
-                                    Icon(
-                                        painter =
-                                            painterResource(
-                                                id = if (showDownloadedPlaylist) R.drawable.check else R.drawable.close,
-                                            ),
-                                        contentDescription = null,
-                                        modifier = Modifier.size(SwitchDefaults.IconSize),
-                                    )
-                                },
-                            )
-                        },
-                        onClick = { onShowDownloadedPlaylistChange(!showDownloadedPlaylist) },
-                    ),
-                    Material3SettingsItem(
-                        icon = painterResource(R.drawable.trending_up),
-                        title = { Text(stringResource(R.string.show_top_playlist)) },
-                        trailingContent = {
-                            Switch(
-                                checked = showTopPlaylist,
-                                onCheckedChange = onShowTopPlaylistChange,
-                                thumbContent = {
-                                    Icon(
-                                        painter =
-                                            painterResource(
-                                                id = if (showTopPlaylist) R.drawable.check else R.drawable.close,
-                                            ),
-                                        contentDescription = null,
-                                        modifier = Modifier.size(SwitchDefaults.IconSize),
-                                    )
-                                },
-                            )
-                        },
-                        onClick = { onShowTopPlaylistChange(!showTopPlaylist) },
-                    ),
-                    Material3SettingsItem(
-                        icon = painterResource(R.drawable.cached),
-                        title = { Text(stringResource(R.string.show_cached_playlist)) },
-                        trailingContent = {
-                            Switch(
-                                checked = showCachedPlaylist,
-                                onCheckedChange = onShowCachedPlaylistChange,
-                                thumbContent = {
-                                    Icon(
-                                        painter =
-                                            painterResource(
-                                                id = if (showCachedPlaylist) R.drawable.check else R.drawable.close,
-                                            ),
-                                        contentDescription = null,
-                                        modifier = Modifier.size(SwitchDefaults.IconSize),
-                                    )
-                                },
-                            )
-                        },
-                        onClick = { onShowCachedPlaylistChange(!showCachedPlaylist) },
-                    ),
-                    Material3SettingsItem(
-                        icon = painterResource(R.drawable.backup),
-                        title = { Text(stringResource(R.string.show_uploaded_playlist)) },
-                        trailingContent = {
-                            Switch(
-                                checked = showUploadedPlaylist,
-                                onCheckedChange = onShowUploadedPlaylistChange,
-                                thumbContent = {
-                                    Icon(
-                                        painter =
-                                            painterResource(
-                                                id = if (showUploadedPlaylist) R.drawable.check else R.drawable.close,
-                                            ),
-                                        contentDescription = null,
-                                        modifier = Modifier.size(SwitchDefaults.IconSize),
-                                    )
-                                },
-                            )
-                        },
-                        onClick = { onShowUploadedPlaylistChange(!showUploadedPlaylist) },
-                    ),
-                ),
-        )
         Spacer(modifier = Modifier.height(16.dp))
 
         if (showExperimentalLyricsBetaDialog) {
@@ -1890,3 +2353,4 @@ enum class LyricsPosition {
     CENTER,
     RIGHT,
 }
+

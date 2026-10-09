@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="spotify_hub_title">Spotify</string>
+    <string name="spotify_import_card_desc">Trae tus playlists con un enlace</string>
+    <string name="spotify_jam_card_title">Unirse a una Jam</string>
+    <string name="spotify_jam_card_desc">Pega el enlace de la Jam de un amigo</string>
+    <string name="spotify_jam_dialog_title">Unirse a una Jam de Spotify</string>
+    <string name="spotify_jam_hint">Enlace de la Jam</string>
+    <string name="spotify_jam_help">Pega el enlace que te compartió el anfitrión. Guardaré la cola como playlist y la buscaré en YouTube.</string>
+    <string name="spotify_jam_join">Unirme</string>
+    <string name="spotify_jam_done">Jam guardada: %1$d canciones</string>
+    <string name="spotify_jam_hidden">Esta Jam no expone su cola sin iniciar sesión en Spotify. Pídele al anfitrión que comparta la cola como playlist e impórtala desde aquí.</string>
+    <string name="settings_group_personalize">Personalización</string>
+    <string name="settings_group_listening">Escucha</string>
+    <string name="settings_group_connections">Conexiones</string>
+    <string name="settings_group_library_data">Biblioteca y datos</string>
+    <string name="settings_group_privacy">Privacidad</string>
+    <string name="settings_group_about">Sistema y ayuda</string>
+</resources>

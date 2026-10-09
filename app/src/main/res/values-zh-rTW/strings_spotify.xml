@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="import_from_spotify">從 Spotify 匯入</string>
+    <string name="playlist_import_error">匯入失敗：%1$s</string>
+    <string name="spotify_playlist_url">Spotify 播放清單 URL 或 ID</string>
+    <string name="spotify_import_searching">正在 YouTube Music 上搜尋歌曲…</string>
+    <string name="spotify_import_done">匯入完成：%2$d 首中找到 %1$d 首</string>
+    <string name="spotify_import_invalid_url">無效的 Spotify URL</string>
+    <string name="spotify_hub_title">Spotify</string>
+    <string name="spotify_import_card_desc">透過連結帶入你的播放清單</string>
+    <string name="spotify_jam_card_title">加入 Jam</string>
+    <string name="spotify_jam_card_desc">貼上朋友的 Jam 連結</string>
+    <string name="spotify_jam_dialog_title">加入 Spotify Jam</string>
+    <string name="spotify_jam_hint">Jam 連結</string>
+    <string name="spotify_jam_help">貼上主持人分享的連結。佇列會儲存為播放清單並在 YouTube 上比對。</string>
+    <string name="spotify_jam_join">加入</string>
+    <string name="spotify_jam_done">Jam 已儲存：%1$d 首歌曲</string>
+    <string name="spotify_jam_hidden">未登入 Spotify 時此 Jam 不會公開其佇列。請主持人將佇列以播放清單分享，然後在此匯入。</string>
+</resources>

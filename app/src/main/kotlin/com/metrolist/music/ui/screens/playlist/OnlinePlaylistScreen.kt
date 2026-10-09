@@ -29,7 +29,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Checkbox
-import androidx.compose.material3.ContainedLoadingIndicator
+import com.metrolist.music.ui.component.ContainedMorphLoadingIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
@@ -95,6 +95,7 @@ import com.metrolist.music.models.toMediaMetadata
 import com.metrolist.music.playback.queues.YouTubePlaylistQueue
 import com.metrolist.music.ui.component.ExpandableText
 import com.metrolist.music.ui.component.IconButton
+import com.metrolist.music.ui.component.LiquidGlassButton
 import com.metrolist.music.ui.component.LocalMenuState
 import com.metrolist.music.ui.component.YouTubeListItem
 import com.metrolist.music.ui.menu.YouTubePlaylistMenu
@@ -205,7 +206,7 @@ fun OnlinePlaylistScreen(
                                     .padding(32.dp),
                             contentAlignment = Alignment.Center,
                         ) {
-                            ContainedLoadingIndicator()
+                            ContainedMorphLoadingIndicator()
                         }
                     }
                 } else if (error != null) {
@@ -351,7 +352,7 @@ fun OnlinePlaylistScreen(
                                         .padding(16.dp),
                                 contentAlignment = Alignment.Center,
                             ) {
-                                ContainedLoadingIndicator()
+                                ContainedMorphLoadingIndicator()
                             }
                         }
                     }
@@ -620,8 +621,14 @@ private fun OnlinePlaylistHeader(
             horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterHorizontally),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            // Like Button - Smaller secondary button
-            Surface(
+            // Bookmark Button - Liquid Glass
+            val isBookmarked = dbPlaylist?.playlist?.bookmarkedAt != null
+            LiquidGlassButton(
+                size = 48.dp,
+                iconSize = 24.dp,
+                iconRes = if (isBookmarked) R.drawable.favorite else R.drawable.favorite_border,
+                iconTint = if (isBookmarked) MaterialTheme.colorScheme.error else null,
+                isActive = isBookmarked,
                 onClick = {
                     if (dbPlaylist != null) {
                         database.transaction {
@@ -658,33 +665,14 @@ private fun OnlinePlaylistHeader(
                         }
                     }
                 },
-                shape = CircleShape,
-                color = MaterialTheme.colorScheme.surfaceVariant,
-                modifier = Modifier.size(48.dp),
-            ) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Icon(
-                        painter =
-                            painterResource(
-                                if (dbPlaylist?.playlist?.bookmarkedAt != null) R.drawable.favorite else R.drawable.favorite_border,
-                            ),
-                        contentDescription = null,
-                        tint =
-                            if (dbPlaylist?.playlist?.bookmarkedAt != null) {
-                                MaterialTheme.colorScheme.error
-                            } else {
-                                MaterialTheme.colorScheme.onSurfaceVariant
-                            },
-                        modifier = Modifier.size(24.dp),
-                    )
-                }
-            }
+            )
 
-            // Play Button - Larger primary circular button
-            Surface(
+            // Play Button - Larger primary circular liquid glass button
+            LiquidGlassButton(
+                size = 72.dp,
+                iconSize = 34.dp,
+                iconRes = R.drawable.play,
+                isActive = true,
                 onClick = {
                     if (!isListenTogetherGuest && songs.isNotEmpty()) {
                         playerConnection.playQueue(
@@ -697,25 +685,13 @@ private fun OnlinePlaylistHeader(
                         )
                     }
                 },
-                color = MaterialTheme.colorScheme.primary,
-                shape = CircleShape,
-                modifier = Modifier.size(72.dp),
-            ) {
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier.fillMaxSize(),
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.play),
-                        contentDescription = stringResource(R.string.play),
-                        tint = MaterialTheme.colorScheme.onPrimary,
-                        modifier = Modifier.size(32.dp),
-                    )
-                }
-            }
+            )
 
-            // Menu Button - Smaller secondary button
-            Surface(
+            // Menu Button - Smaller secondary liquid glass button
+            LiquidGlassButton(
+                size = 48.dp,
+                iconSize = 24.dp,
+                iconRes = R.drawable.more_vert,
                 onClick = {
                     menuState.show {
                         YouTubePlaylistMenu(
@@ -726,21 +702,8 @@ private fun OnlinePlaylistHeader(
                         )
                     }
                 },
-                shape = CircleShape,
-                color = MaterialTheme.colorScheme.surfaceVariant,
-                modifier = Modifier.size(48.dp),
-            ) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.more_vert),
-                        contentDescription = null,
-                        modifier = Modifier.size(24.dp),
-                    )
-                }
-            }
+            )
         }
     }
 }
+

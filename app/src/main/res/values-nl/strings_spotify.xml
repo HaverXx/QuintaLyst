@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="import_from_spotify">Importeren vanuit Spotify</string>
+    <string name="playlist_import_error">Importeren mislukt: %1$s</string>
+    <string name="spotify_playlist_url">Spotify-afspeellijst-URL of -ID</string>
+    <string name="spotify_import_searching">Nummers zoeken op YouTube Music…</string>
+    <string name="spotify_import_done">Import voltooid: %1$d van %2$d nummers gevonden</string>
+    <string name="spotify_import_invalid_url">Ongeldige Spotify-URL</string>
+    <string name="spotify_hub_title">Spotify</string>
+    <string name="spotify_import_card_desc">Haal je afspeellijsten binnen met een link</string>
+    <string name="spotify_jam_card_title">Meedoen aan een Jam</string>
+    <string name="spotify_jam_card_desc">Plak de Jam-link van een vriend</string>
+    <string name="spotify_jam_dialog_title">Meedoen aan een Spotify Jam</string>
+    <string name="spotify_jam_hint">Jam-link</string>
+    <string name="spotify_jam_help">Plak de link die de host deelde. De wachtrij wordt opgeslagen als afspeellijst en op YouTube gezocht.</string>
+    <string name="spotify_jam_join">Meedoen</string>
+    <string name="spotify_jam_done">Jam opgeslagen: %1$d nummers</string>
+    <string name="spotify_jam_hidden">Deze Jam toont de wachtrij niet zonder Spotify-login. Vraag de host de wachtrij als afspeellijst te delen en importeer die hier.</string>
+</resources>

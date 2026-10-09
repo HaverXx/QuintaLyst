@@ -17,6 +17,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
@@ -55,6 +56,7 @@ import com.metrolist.music.constants.HistoryDuration
 import com.metrolist.music.constants.KeepScreenOn
 import com.metrolist.music.constants.LoudnessLevel
 import com.metrolist.music.constants.LoudnessLevelKey
+import com.metrolist.music.constants.VolumeBoostDbKey
 import com.metrolist.music.constants.PauseOnMute
 import com.metrolist.music.constants.PersistentQueueKey
 import com.metrolist.music.constants.PersistentShuffleAcrossQueuesKey
@@ -97,7 +99,7 @@ fun PlayerSettings(
 ) {
     val (audioQuality, onAudioQualityChange) = rememberEnumPreference(
         AudioQualityKey,
-        defaultValue = AudioQuality.AUTO
+        defaultValue = AudioQuality.HIGH
     )
     val (crossfadeEnabled, onCrossfadeEnabledChange) = rememberPreference(
         CrossfadeEnabledKey,
@@ -131,6 +133,11 @@ fun PlayerSettings(
     val (loudnessLevel, onLoudnessLevelChange) = rememberEnumPreference(
         LoudnessLevelKey,
         defaultValue = LoudnessLevel.BALANCED,
+    )
+
+    val (volumeBoostDb, onVolumeBoostDbChange) = rememberPreference(
+        VolumeBoostDbKey,
+        defaultValue = 0f,
     )
 
     val (audioOffload, onAudioOffloadChange) = rememberPreference(
@@ -446,6 +453,28 @@ fun PlayerSettings(
                         onClick = { showLoudnessLevelDialog = true }
                     ))
                 }
+                add(Material3SettingsItem(
+                    icon = painterResource(R.drawable.volume_up),
+                    title = { Text(stringResource(R.string.volume_boost)) },
+                    description = {
+                        Column {
+                            Text(
+                                if (volumeBoostDb < 0.5f) stringResource(R.string.volume_boost_off)
+                                else "+${volumeBoostDb.roundToInt()} dB",
+                            )
+                            Slider(
+                                value = volumeBoostDb,
+                                onValueChange = { onVolumeBoostDbChange(it.roundToInt().toFloat()) },
+                                valueRange = 0f..12f,
+                                steps = 11,
+                            )
+                            Text(
+                                stringResource(R.string.volume_boost_desc),
+                                style = MaterialTheme.typography.bodySmall,
+                            )
+                        }
+                    },
+                ))
                 add(Material3SettingsItem(
                     icon = painterResource(R.drawable.graphic_eq),
                     title = { Text(stringResource(R.string.audio_offload)) },
@@ -934,27 +963,6 @@ fun PlayerSettings(
                         )
                     },
                     onClick = { onRememberShuffleAndRepeatChange(!rememberShuffleAndRepeat) }
-                ),
-                Material3SettingsItem(
-                    icon = painterResource(R.drawable.shuffle),
-                    title = { Text(stringResource(R.string.shuffle_playlist_first)) },
-                    description = { Text(stringResource(R.string.shuffle_playlist_first_desc)) },
-                    trailingContent = {
-                        Switch(
-                            checked = shufflePlaylistFirst,
-                            onCheckedChange = onShufflePlaylistFirstChange,
-                            thumbContent = {
-                                Icon(
-                                    painter = painterResource(
-                                        id = if (shufflePlaylistFirst) R.drawable.check else R.drawable.close
-                                    ),
-                                    contentDescription = null,
-                                    modifier = Modifier.size(SwitchDefaults.IconSize)
-                                )
-                            }
-                        )
-                    },
-                    onClick = { onShufflePlaylistFirstChange(!shufflePlaylistFirst) }
                 ),
                 Material3SettingsItem(
                     icon = painterResource(R.drawable.queue_music),

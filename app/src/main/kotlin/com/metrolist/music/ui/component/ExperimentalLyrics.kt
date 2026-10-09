@@ -159,7 +159,7 @@ fun ExperimentalLyrics(
     val listenTogetherManager = LocalListenTogetherManager.current
     val isGuest = listenTogetherManager?.isInRoom == true && !listenTogetherManager.isHost
 
-    val lyricsTextPosition by rememberEnumPreference(LyricsTextPositionKey, LyricsPosition.CENTER)
+    val lyricsTextPosition by rememberEnumPreference(LyricsTextPositionKey, LyricsPosition.LEFT)
     val changeLyrics by rememberPreference(LyricsClickKey, true)
     val romanizeLyricsList = rememberPreference(LyricsRomanizeList, "")
     val romanizeAsMain by rememberPreference(LyricsRomanizeAsMainKey, false)
@@ -770,7 +770,7 @@ fun ExperimentalLyrics(
                                         bgVisible = bgVisible, isSelected = selectedIndices.contains(index),
                                         isSelectionModeActive = isSelectionModeActive, currentPositionState = currentPositionState,
                                         lyricsOffset = (currentSong?.song?.lyricsOffset ?: 0).toLong(),
-                                        playerConnection = playerConnection, lyricsTextSize = 36f, lyricsLineSpacing = 1.3f,
+                                        playerConnection = playerConnection, lyricsTextSize = 30f, lyricsLineSpacing = 1.18f,
                                         expressiveAccent = expressiveAccent, lyricsTextPosition = lyricsTextPosition,
                                         respectAgentPositioning = respectAgentPositioning, isAutoScrollEnabled = isAutoScrollEnabled,
                                         displayedCurrentLineIndex = deferredCurrentLineIndex, romanizeAsMain = romanizeAsMain,

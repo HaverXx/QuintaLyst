@@ -97,6 +97,7 @@ import com.metrolist.music.extensions.toMediaItem
 import com.metrolist.music.models.toMediaMetadata
 import com.metrolist.music.playback.queues.ListQueue
 import com.metrolist.music.playback.queues.YouTubeQueue
+import com.metrolist.music.ui.component.liquidGlass
 import com.metrolist.music.ui.component.ChipsRow
 import com.metrolist.music.ui.component.EmptyPlaceholder
 import com.metrolist.music.ui.component.HideOnScrollFAB
@@ -364,7 +365,6 @@ fun OnlineSearchResult(
         modifier =
             Modifier
                 .fillMaxSize()
-                .background(if (pureBlack) Color.Black else MaterialTheme.colorScheme.background)
                 .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Top)),
     ) {
         // Google-style SearchBar with Material 3 design
@@ -420,18 +420,8 @@ fun OnlineSearchResult(
             shape = RoundedCornerShape(28.dp),
             colors =
                 OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor =
-                        if (pureBlack) {
-                            MaterialTheme.colorScheme.surface
-                        } else {
-                            MaterialTheme.colorScheme.surfaceContainerHigh
-                        },
-                    unfocusedContainerColor =
-                        if (pureBlack) {
-                            MaterialTheme.colorScheme.surface
-                        } else {
-                            MaterialTheme.colorScheme.surfaceContainerHigh
-                        },
+                    focusedContainerColor = Color.Transparent,
+                    unfocusedContainerColor = Color.Transparent,
                     focusedBorderColor = Color.Transparent,
                     unfocusedBorderColor = Color.Transparent,
                 ),
@@ -439,6 +429,7 @@ fun OnlineSearchResult(
                 Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 8.dp)
+                    .liquidGlass(cornerRadius = 28.dp, fallbackColor = Color.White.copy(alpha = 0.12f))
                     .focusRequester(focusRequester)
                     .onFocusChanged { focusState ->
                         if (focusState.isFocused) {
@@ -449,7 +440,10 @@ fun OnlineSearchResult(
 
         // Main content area below search bar
         Box(modifier = Modifier.weight(1f)) {
-            Column(
+            // Los resultados y las sugerencias en tiempo real son excluyentes: si se dibujaran a la vez
+            // (el fondo del overlay es transparente) se superpondrían. lazyListState vive fuera, así que
+            // al volver se conserva la posición de scroll.
+            if (!isSearchFocused) Column(
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 val visibleChips =

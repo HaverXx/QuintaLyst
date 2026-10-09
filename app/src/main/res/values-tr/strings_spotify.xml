@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="import_from_spotify">Spotify\'dan içe aktar</string>
+    <string name="playlist_import_error">İçe aktarma başarısız: %1$s</string>
+    <string name="spotify_playlist_url">Spotify çalma listesi URL\'si veya kimliği</string>
+    <string name="spotify_import_searching">Şarkılar YouTube Music\'te aranıyor…</string>
+    <string name="spotify_import_done">İçe aktarma tamamlandı: %2$d şarkıdan %1$d tanesi bulundu</string>
+    <string name="spotify_import_invalid_url">Geçersiz Spotify URL\'si</string>
+    <string name="spotify_hub_title">Spotify</string>
+    <string name="spotify_import_card_desc">Çalma listelerini bir bağlantıyla getir</string>
+    <string name="spotify_jam_card_title">Bir Jam\'e katıl</string>
+    <string name="spotify_jam_card_desc">Bir arkadaşının Jam bağlantısını yapıştır</string>
+    <string name="spotify_jam_dialog_title">Bir Spotify Jam\'ine katıl</string>
+    <string name="spotify_jam_hint">Jam bağlantısı</string>
+    <string name="spotify_jam_help">Ev sahibinin paylaştığı bağlantıyı yapıştır. Sıra çalma listesi olarak kaydedilir ve YouTube\'da aranır.</string>
+    <string name="spotify_jam_join">Katıl</string>
+    <string name="spotify_jam_done">Jam kaydedildi: %1$d şarkı</string>
+    <string name="spotify_jam_hidden">Bu Jam, Spotify girişi olmadan sırasını göstermiyor. Ev sahibinden sırayı çalma listesi olarak paylaşmasını iste ve buradan içe aktar.</string>
+</resources>

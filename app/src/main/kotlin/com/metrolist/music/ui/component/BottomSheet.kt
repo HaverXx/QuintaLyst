@@ -61,6 +61,10 @@ fun BottomSheet(
     state: BottomSheetState,
     modifier: Modifier = Modifier,
     background: @Composable (BoxScope.() -> Unit) = { },
+    // Si es true, el fondo se desplaza junto con la hoja (como un panel) en vez de desvanecerse en su sitio.
+    backgroundFollowsSheet: Boolean = false,
+    // Radio de las esquinas superiores cuando la hoja no está del todo abierta.
+    collapsedCornerRadius: androidx.compose.ui.unit.Dp = 16.dp,
     onDismiss: (() -> Unit)? = null,
     collapsedContent: @Composable BoxScope.() -> Unit,
     isExpandable: Boolean = true,
@@ -71,8 +75,13 @@ fun BottomSheet(
     Box(
         modifier = modifier
             .graphicsLayer {
-                // background fades during about 10%-61% progress
-                alpha = (1.4f * (state.progress.coerceAtLeast(0.1f) - 0.1f).pow(0.5f)).coerceIn(0f, 1f)
+                if (backgroundFollowsSheet) {
+                    translationY = (state.expandedBound - state.value).toPx().coerceAtLeast(0f)
+                    alpha = (state.progress * 5f).coerceIn(0f, 1f)
+                } else {
+                    // background fades during about 10%-61% progress
+                    alpha = (1.4f * (state.progress.coerceAtLeast(0.1f) - 0.1f).pow(0.5f)).coerceIn(0f, 1f)
+                }
             }
             .fillMaxSize(),
         content = background
@@ -108,7 +117,7 @@ fun BottomSheet(
                 )
             }
             .graphicsLayer {
-                val cornerRadius = if (!state.isExpanded) 16.dp.toPx() else 0f
+                val cornerRadius = if (!state.isExpanded) collapsedCornerRadius.toPx() else 0f
                 shape = RoundedCornerShape(topStart = cornerRadius, topEnd = cornerRadius)
                 clip = true
             }

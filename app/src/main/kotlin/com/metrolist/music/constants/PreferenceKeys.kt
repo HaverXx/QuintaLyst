@@ -21,6 +21,14 @@ val DarkModeKey = stringPreferencesKey("darkMode")
 val PureBlackKey = booleanPreferencesKey("pureBlack")
 val PureBlackMiniPlayerKey = booleanPreferencesKey("pureBlackMiniPlayer")
 val MiniPlayerBackgroundStyleKey = stringPreferencesKey("miniPlayerBackgroundStyle")
+val ThumbnailCornerRadiusKey = floatPreferencesKey("thumbnailCornerRadius")
+val DynamicBackgroundKey = booleanPreferencesKey("dynamicBackground")
+val DynamicBgIntensityKey = floatPreferencesKey("dynamicBgIntensity")
+val DynamicBgSpeedKey = floatPreferencesKey("dynamicBgSpeed")
+val DynamicBgBlurKey = floatPreferencesKey("dynamicBgBlur")
+val HomeWallpaperKey = stringPreferencesKey("homeWallpaper")
+val HomeWallpaperOpacityKey = floatPreferencesKey("homeWallpaperOpacity")
+val HomeWallpaperBlurKey = floatPreferencesKey("homeWallpaperBlur")
 
 enum class MiniPlayerBackgroundStyle {
     DEFAULT,
@@ -60,6 +68,13 @@ val SwipeToSongKey = booleanPreferencesKey("SwipeToSong")
 val SwipeToRemoveSongKey = booleanPreferencesKey("SwipeToRemoveSong")
 val UseNewPlayerDesignKey = booleanPreferencesKey("useNewPlayerDesign")
 val UseNewMiniPlayerDesignKey = booleanPreferencesKey("useNewMiniPlayerDesign")
+val LiquidGlassKey = booleanPreferencesKey("liquidGlass")
+val RetroStyleKey = booleanPreferencesKey("retroStyle")
+val RetroDynamicLabelKey = booleanPreferencesKey("retroDynamicLabel")
+/** Opacidad (0.1..1) de las capas de color del cristal de la pestaña "Reproduciendo". */
+val PlayerGlassOpacityKey = floatPreferencesKey("playerGlassOpacity")
+/** Oscurecimiento (0..1) de la barra del mini reproductor para mejorar la legibilidad. 0 = diseño original. */
+val MiniPlayerDimKey = floatPreferencesKey("miniPlayerDim")
 val HidePlayerThumbnailKey = booleanPreferencesKey("hidePlayerThumbnail")
 val CropAlbumArtKey = booleanPreferencesKey("cropAlbumArt")
 val SeekExtraSeconds = booleanPreferencesKey("seekExtraSeconds")
@@ -129,6 +144,9 @@ val SkipSilenceInstantKey = booleanPreferencesKey("skipSilenceInstant")
 val AudioNormalizationKey = booleanPreferencesKey("audioNormalization")
 
 val LoudnessLevelKey = stringPreferencesKey("loudnessLevel")
+
+/** Extra gain in dB (0..12) applied after normalization, with a soft limiter against clipping. */
+val VolumeBoostDbKey = floatPreferencesKey("volumeBoostDb")
 
 enum class LoudnessLevel(
     val targetLufs: Float
@@ -430,6 +448,26 @@ enum class PlayerBackgroundStyle {
     BLUR,
 }
 
+enum class DynamicBackgroundStyle {
+    GRADIENT,
+    BLUR_ALBUM,
+}
+
+val DynamicBackgroundStyleKey = stringPreferencesKey("dynamicBackgroundStyle")
+val CustomAppIconPathKey = stringPreferencesKey("customAppIconPath")
+val CustomAppIconTimestampKey = longPreferencesKey("customAppIconTimestamp")
+
+val CustomAppTitleKey = stringPreferencesKey("customAppTitle")
+val AppIconStyleKey = stringPreferencesKey("appIconStyle")
+val ShowSpeedDialKey = booleanPreferencesKey("showSpeedDial")
+val ShowQuickPicksKey = booleanPreferencesKey("showQuickPicks")
+val ShowDailyDiscoverKey = booleanPreferencesKey("showDailyDiscover")
+val ShowKeepListeningKey = booleanPreferencesKey("showKeepListening")
+val ShowAccountPlaylistsKey = booleanPreferencesKey("showAccountPlaylists")
+val ShowForgottenFavoritesKey = booleanPreferencesKey("showForgottenFavorites")
+val ShowFromTheCommunityKey = booleanPreferencesKey("showFromTheCommunity")
+val ShowMoodAndGenresKey = booleanPreferencesKey("showMoodAndGenres")
+
 val TopSize = stringPreferencesKey("topSize")
 val HistoryDuration = floatPreferencesKey("historyDuration")
 
@@ -719,3 +757,4 @@ val CountryCodeToName =
         "YE" to "Yemen",
         "ZW" to "Zimbabwe",
     )
+

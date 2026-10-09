@@ -30,10 +30,12 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.add
@@ -151,6 +153,10 @@ import com.metrolist.music.constants.LastSeenVersionKey
 import com.metrolist.music.constants.ListenTogetherInTopBarKey
 import com.metrolist.music.constants.ListenTogetherUsernameKey
 import com.metrolist.music.constants.LyricsProviderOrderKey
+import com.metrolist.music.constants.LiquidGlassKey
+import com.metrolist.music.constants.RetroMiniPlayerHeight
+import com.metrolist.music.constants.RetroDynamicLabelKey
+import com.metrolist.music.constants.RetroStyleKey
 import com.metrolist.music.constants.MiniPlayerBottomSpacing
 import com.metrolist.music.constants.MiniPlayerHeight
 import com.metrolist.music.constants.NavigationBarAnimationSpec
@@ -160,11 +166,22 @@ import com.metrolist.music.constants.PauseSearchHistoryKey
 import com.metrolist.music.constants.PreferredLyricsProvider
 import com.metrolist.music.constants.PreferredLyricsProviderKey
 import com.metrolist.music.constants.PureBlackKey
+import com.metrolist.music.constants.DynamicBackgroundKey
+import com.metrolist.music.constants.DynamicBackgroundStyle
+import com.metrolist.music.constants.DynamicBackgroundStyleKey
+import com.metrolist.music.constants.DynamicBgBlurKey
+import com.metrolist.music.constants.DynamicBgIntensityKey
+import com.metrolist.music.constants.DynamicBgSpeedKey
+import com.metrolist.music.constants.CustomAppTitleKey
+import com.metrolist.music.constants.CustomAppIconPathKey
+import com.metrolist.music.constants.CustomAppIconTimestampKey
 import com.metrolist.music.constants.SYSTEM_DEFAULT
 import com.metrolist.music.constants.SelectedThemeColorKey
 import com.metrolist.music.constants.SimpMusicMigrationDoneKey
 import com.metrolist.music.constants.SlimNavBarHeight
 import com.metrolist.music.constants.SlimNavBarKey
+import com.metrolist.music.constants.ThumbnailCornerRadiusKey
+import com.metrolist.music.constants.LocalThumbnailCornerRadius
 import com.metrolist.music.constants.StopMusicOnTaskClearKey
 import com.metrolist.music.constants.UpdateNotificationsEnabledKey
 import com.metrolist.music.constants.UseNewMiniPlayerDesignKey
@@ -179,14 +196,27 @@ import com.metrolist.music.playback.MusicService
 import com.metrolist.music.playback.MusicService.MusicBinder
 import com.metrolist.music.playback.PlayerConnection
 import com.metrolist.music.playback.queues.YouTubeQueue
+import com.metrolist.music.ui.component.LaunchAnimation
 import com.metrolist.music.ui.component.AccountSettingsDialog
 import com.metrolist.music.ui.component.AppNavigationBar
 import com.metrolist.music.ui.component.AppNavigationRail
+import com.metrolist.music.ui.component.LiquidGlassButton
+import com.metrolist.music.utils.IconUtils
+import androidx.compose.foundation.border
 import com.metrolist.music.ui.component.BottomSheetMenu
 import com.metrolist.music.ui.component.BottomSheetPage
 import com.metrolist.music.ui.component.LocalBottomSheetPageState
+import com.metrolist.music.ui.component.LocalLiquidBackdrop
 import com.metrolist.music.ui.component.LocalMenuState
+import com.metrolist.music.ui.component.liquidGlassSource
+import com.metrolist.music.ui.component.LocalRetroAccent
+import com.metrolist.music.ui.component.LocalRetroStyle
+import com.metrolist.music.ui.component.RetroAudioMeterEffect
+import com.metrolist.music.ui.component.RetroCrtOverlay
+import com.metrolist.music.ui.component.RetroPalette
+import com.metrolist.music.ui.component.RetroTvBackground
 import com.metrolist.music.ui.component.rememberBottomSheetState
+import com.metrolist.music.ui.component.rememberLiquidBackdrop
 import com.metrolist.music.ui.component.shimmer.ShimmerTheme
 import com.metrolist.music.ui.menu.YouTubeSongMenu
 import com.metrolist.music.ui.player.BottomSheetPlayer
@@ -473,14 +503,17 @@ class MainActivity : FragmentActivity() {
         }
 
         setContent {
-            MetrolistApp(
-                latestVersionName = latestVersionName,
-                onLatestVersionNameChange = { latestVersionName = it },
-                playerConnection = playerConnectionSnapshot,
-                database = database,
-                downloadUtil = downloadUtil,
-                syncUtils = syncUtils,
-            )
+            Box(Modifier.fillMaxSize()) {
+                MetrolistApp(
+                    latestVersionName = latestVersionName,
+                    onLatestVersionNameChange = { latestVersionName = it },
+                    playerConnection = playerConnectionSnapshot,
+                    database = database,
+                    downloadUtil = downloadUtil,
+                    syncUtils = syncUtils,
+                )
+                LaunchAnimation()
+            }
         }
     }
 
@@ -572,6 +605,88 @@ class MainActivity : FragmentActivity() {
 
         val enableDynamicTheme by rememberPreference(DynamicThemeKey, defaultValue = true)
         val enableHighRefreshRate by rememberPreference(EnableHighRefreshRateKey, defaultValue = true)
+        val appBgModeRaw by rememberPreference(com.metrolist.music.constants.AppBackgroundModeKey, defaultValue = "")
+        val legacyDynamicBackground by rememberPreference(DynamicBackgroundKey, defaultValue = true)
+        val legacyDynamicBgStyle by rememberEnumPreference(DynamicBackgroundStyleKey, defaultValue = DynamicBackgroundStyle.BLUR_ALBUM)
+        val homeWallpaperPathPref by rememberPreference(com.metrolist.music.constants.HomeWallpaperKey, defaultValue = "")
+        val appBgColorHex by rememberPreference(com.metrolist.music.constants.AppBackgroundColorKey, defaultValue = "")
+        val albumBgOpacity by rememberPreference(com.metrolist.music.constants.AlbumBgOpacityKey, defaultValue = 0.85f)
+        val savedBgMode =
+            com.metrolist.music.constants.resolveAppBackgroundMode(
+                saved = appBgModeRaw,
+                legacyDynamic = legacyDynamicBackground,
+                legacyStyle = legacyDynamicBgStyle,
+                hasWallpaper = homeWallpaperPathPref.isNotBlank(),
+            )
+
+        // ── Fondos aleatorios: el fondo se sortea al cambiar de canción y no cambia mientras suene la misma ──
+        val wallpaperRandomPref by rememberPreference(com.metrolist.music.constants.HomeWallpaperRandomKey, defaultValue = false)
+        val wallpaperGalleryRawPref by rememberPreference(com.metrolist.music.constants.HomeWallpaperGalleryKey, defaultValue = "")
+        val wallpaperSourcesRawPref by rememberPreference(com.metrolist.music.constants.HomeWallpaperSourcesKey, defaultValue = "MANUAL")
+        val randomWallpaperActive = savedBgMode == com.metrolist.music.constants.AppBackgroundMode.CUSTOM && wallpaperRandomPref
+        var currentSongId by remember { mutableStateOf<String?>(null) }
+        var lastSeenSongId by remember { mutableStateOf<String?>(null) }
+        var wallpaperSlot by remember { mutableStateOf<com.metrolist.music.constants.WallpaperSlot?>(null) }
+        val repickWallpaper: suspend () -> Unit = {
+            val sources = com.metrolist.music.constants.parseWallpaperSources(wallpaperSourcesRawPref)
+            val manual =
+                com.metrolist.music.constants
+                    .parseWallpaperGallery(wallpaperGalleryRawPref)
+                    .filter { java.io.File(it).exists() }
+            wallpaperSlot =
+                com.metrolist.music.constants.pickWallpaperSlot(
+                    sources = sources,
+                    manual = manual,
+                    previous = wallpaperSlot,
+                    deviceMedia = { exclude ->
+                        com.metrolist.music.utils.DeviceGalleryScanner.randomMedia(this@MainActivity, exclude)
+                    },
+                )
+        }
+        // Al activar el modo o cambiar sus ajustes (fuentes, archivos añadidos) se elige un fondo nuevo.
+        LaunchedEffect(randomWallpaperActive, wallpaperSourcesRawPref, wallpaperGalleryRawPref) {
+            if (randomWallpaperActive) repickWallpaper() else wallpaperSlot = null
+        }
+        // Al cambiar de canción se elige otro. La primera canción detectada al abrir la app no cuenta como cambio.
+        LaunchedEffect(currentSongId) {
+            val previousSong = lastSeenSongId
+            lastSeenSongId = currentSongId
+            if (randomWallpaperActive && previousSong != null && currentSongId != null && currentSongId != previousSong) {
+                repickWallpaper()
+            }
+        }
+        val appBgMode =
+            if (randomWallpaperActive) {
+                when (wallpaperSlot?.kind) {
+                    com.metrolist.music.constants.WallpaperSlotKind.GRADIENT -> com.metrolist.music.constants.AppBackgroundMode.ANIMATED_GRADIENT
+                    com.metrolist.music.constants.WallpaperSlotKind.ALBUM -> com.metrolist.music.constants.AppBackgroundMode.ALBUM
+                    com.metrolist.music.constants.WallpaperSlotKind.SOLID -> com.metrolist.music.constants.AppBackgroundMode.SOLID
+                    else -> com.metrolist.music.constants.AppBackgroundMode.CUSTOM
+                }
+            } else {
+                savedBgMode
+            }
+        val dynamicBackground =
+            appBgMode == com.metrolist.music.constants.AppBackgroundMode.ANIMATED_GRADIENT ||
+                appBgMode == com.metrolist.music.constants.AppBackgroundMode.ALBUM
+        val dynamicBgStyle =
+            if (appBgMode == com.metrolist.music.constants.AppBackgroundMode.ALBUM) {
+                DynamicBackgroundStyle.BLUR_ALBUM
+            } else {
+                DynamicBackgroundStyle.GRADIENT
+            }
+        val appSolidColor =
+            if (appBgMode == com.metrolist.music.constants.AppBackgroundMode.SOLID) {
+                com.metrolist.music.constants.parseBackgroundColor(appBgColorHex)
+            } else {
+                null
+            }
+        val dynamicBgIntensity by rememberPreference(DynamicBgIntensityKey, defaultValue = 0.35f)
+        val dynamicBgSpeed by rememberPreference(DynamicBgSpeedKey, defaultValue = 1.0f)
+        val dynamicBgBlur by rememberPreference(DynamicBgBlurKey, defaultValue = 0.15f)
+        val customAppIconPath by rememberPreference(CustomAppIconPathKey, defaultValue = "")
+        val customAppIconTimestamp by rememberPreference(CustomAppIconTimestampKey, defaultValue = 0L)
+        var currentSongThumbnailUrl by remember { mutableStateOf<String?>(null) }
 
         LaunchedEffect(enableHighRefreshRate) {
             val window = this@MainActivity.window
@@ -603,9 +718,12 @@ class MainActivity : FragmentActivity() {
 
         val darkTheme by rememberEnumPreference(DarkModeKey, defaultValue = DarkMode.AUTO)
         val isSystemInDarkTheme = isSystemInDarkTheme()
+        val (retroStyle) = rememberPreference(RetroStyleKey, defaultValue = false)
+        val (retroDynamicLabel) = rememberPreference(RetroDynamicLabelKey, defaultValue = true)
+        if (retroStyle) RetroAudioMeterEffect()
         val useDarkTheme =
-            remember(darkTheme, isSystemInDarkTheme) {
-                if (darkTheme == DarkMode.AUTO) isSystemInDarkTheme else darkTheme == DarkMode.ON
+            remember(darkTheme, isSystemInDarkTheme, retroStyle) {
+                retroStyle || if (darkTheme == DarkMode.AUTO) isSystemInDarkTheme else darkTheme == DarkMode.ON
             }
 
         LaunchedEffect(useDarkTheme) {
@@ -625,33 +743,26 @@ class MainActivity : FragmentActivity() {
 
         val showChangelog = rememberSaveable { mutableStateOf(false) }
 
-        var themeColor by rememberSaveable(stateSaver = ColorSaver) {
+        // Background color: ALWAYS dynamically extracted from the currently playing song's thumbnail!
+        var songDynamicColor by rememberSaveable(stateSaver = ColorSaver) {
             mutableStateOf(selectedThemeColor)
         }
 
-        val themeColorCache = remember { mutableMapOf<String, Color>() }
+        val songColorCache = remember { mutableMapOf<String, Color>() }
 
-        LaunchedEffect(selectedThemeColor) {
-            if (!enableDynamicTheme) {
-                themeColor = selectedThemeColor
-            }
-        }
-
-        LaunchedEffect(playerConnection, enableDynamicTheme, selectedThemeColor) {
-            val playerConnection = playerConnection
-            if (!enableDynamicTheme || playerConnection == null) {
-                themeColor = selectedThemeColor
-                return@LaunchedEffect
-            }
+        LaunchedEffect(playerConnection) {
+            val playerConnection = playerConnection ?: return@LaunchedEffect
 
             playerConnection.service.currentMediaMetadata
                 .distinctUntilChanged { old, new -> old?.id == new?.id }
                 .collectLatest { song ->
+                    currentSongThumbnailUrl = song?.thumbnailUrl
+                    currentSongId = song?.id
                     if (song?.thumbnailUrl != null) {
-                        val cached = themeColorCache[song.thumbnailUrl]
+                        val cached = songColorCache[song.thumbnailUrl]
                         if (cached != null) {
                             withFrameNanos { }
-                            themeColor = cached
+                            songDynamicColor = cached
                             return@collectLatest
                         }
                         withContext(Dispatchers.IO) {
@@ -669,25 +780,32 @@ class MainActivity : FragmentActivity() {
                                             .build(),
                                     )
                                 val extractedColor = result.image?.toBitmap()?.extractThemeColor() ?: selectedThemeColor
-                                themeColorCache[song.thumbnailUrl] = extractedColor
+                                songColorCache[song.thumbnailUrl] = extractedColor
                                 withFrameNanos { }
-                                themeColor = extractedColor
+                                songDynamicColor = extractedColor
                             } catch (e: Exception) {
                                 withFrameNanos { }
-                                themeColor = selectedThemeColor
+                                songDynamicColor = selectedThemeColor
                             }
                         }
                     } else {
-                        themeColor = selectedThemeColor
+                        songDynamicColor = selectedThemeColor
                     }
                 }
         }
 
+        val thumbnailCornerRadiusPref by rememberPreference(ThumbnailCornerRadiusKey, defaultValue = 24f)
+
         MetrolistTheme(
             darkTheme = useDarkTheme,
             pureBlack = pureBlack,
-            themeColor = themeColor,
+            themeColor = selectedThemeColor, // ACCENT COLOR: ONLY changes icons, buttons, sliders!
         ) {
+            CompositionLocalProvider(
+                LocalThumbnailCornerRadius provides thumbnailCornerRadiusPref.dp,
+                LocalRetroStyle provides retroStyle,
+                LocalRetroAccent provides (if (retroDynamicLabel) songDynamicColor else RetroPalette.Orange),
+            ) {
             val currentDensity = LocalDensity.current
             val windowInfo = LocalWindowInfo.current
             val containerSize = windowInfo.containerDpSize
@@ -714,13 +832,69 @@ class MainActivity : FragmentActivity() {
             }
 
             CompositionLocalProvider(LocalDensity provides scaledDensity) {
-            BoxWithConstraints(
-                modifier =
-                    Modifier
-                        .fillMaxSize()
-                        .background(if (pureBlack) Color.Black else MaterialTheme.colorScheme.surface),
-            ) {
-                val density = LocalDensity.current
+                val (glassSetting) = rememberPreference(LiquidGlassKey, defaultValue = true)
+                val glassPref = glassSetting && !retroStyle
+                val meshBackdrop = rememberLiquidBackdrop()
+                // The WebView on the login screen flickers if anything behind it keeps redrawing every frame.
+                var onLoginRoute by remember { mutableStateOf(false) }
+                com.metrolist.music.ui.component.MeshBackground(
+                    backdrop = if (glassPref && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) meshBackdrop else null,
+                    themeColor = songDynamicColor, // DYNAMIC BACKGROUND: ALWAYS follows the song!
+                    pureBlack = pureBlack,
+                    intensity = dynamicBgIntensity,
+                    speed = dynamicBgSpeed,
+                    enabled = dynamicBackground && !retroStyle,
+                    paused = onLoginRoute,
+                    style = dynamicBgStyle,
+                    thumbnailUrl = currentSongThumbnailUrl,
+                    coverBlur = dynamicBgBlur,
+                    solidColor = if (retroStyle) RetroPalette.Screen else appSolidColor,
+                    albumOpacity = albumBgOpacity,
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    val (wallpaperPath) = rememberPreference(com.metrolist.music.constants.HomeWallpaperKey, defaultValue = "")
+                    val (wallpaperOpacity) = rememberPreference(com.metrolist.music.constants.HomeWallpaperOpacityKey, defaultValue = 0.35f)
+                    val (wallpaperBlur) = rememberPreference(com.metrolist.music.constants.HomeWallpaperBlurKey, defaultValue = 0f)
+                    val randomSlotSource =
+                        wallpaperSlot
+                            ?.takeIf { it.kind == com.metrolist.music.constants.WallpaperSlotKind.MEDIA }
+                            ?.source
+                            ?.takeIf { com.metrolist.music.ui.component.wallpaperSourceExists(it) }
+                    val useRandomWallpaper = randomWallpaperActive && randomSlotSource != null
+                    val wallpaperBackdrop = rememberLiquidBackdrop()
+                    val hasWallpaper =
+                        !retroStyle &&
+                            !onLoginRoute &&
+                            appBgMode == com.metrolist.music.constants.AppBackgroundMode.CUSTOM &&
+                            (
+                                useRandomWallpaper ||
+                                    (!randomWallpaperActive && wallpaperPath.isNotBlank() && java.io.File(wallpaperPath).exists())
+                            )
+                    Box(modifier = Modifier.fillMaxSize()) {
+                    if (retroStyle) {
+                        RetroTvBackground(modifier = Modifier.fillMaxSize())
+                    }
+                    if (hasWallpaper) {
+                        if (useRandomWallpaper) {
+                            com.metrolist.music.ui.component.RandomAppWallpaper(
+                                path = randomSlotSource!!,
+                                opacity = wallpaperOpacity,
+                                blur = wallpaperBlur,
+                                backdrop = wallpaperBackdrop,
+                            )
+                        } else {
+                            com.metrolist.music.ui.component.AppWallpaper(
+                                path = wallpaperPath,
+                                opacity = wallpaperOpacity,
+                                blur = wallpaperBlur,
+                                backdrop = wallpaperBackdrop,
+                            )
+                        }
+                    }
+                    BoxWithConstraints(
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        val density = LocalDensity.current
                 val configuration = LocalWindowInfo.current
                 val cutoutInsets = WindowInsets.displayCutout
                 val windowsInsets = WindowInsets.systemBars
@@ -740,6 +914,11 @@ class MainActivity : FragmentActivity() {
                 val homeViewModel: HomeViewModel = hiltViewModel()
                 val accountImageUrl by homeViewModel.accountImageUrl.collectAsStateWithLifecycle()
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
+                LaunchedEffect(navBackStackEntry?.destination?.route) {
+                    val route = navBackStackEntry?.destination?.route
+                    onLoginRoute = route == "login" || route == "switch_channel"
+                    if (route != null && route != Screens.Home.route) com.metrolist.music.ui.component.StartupGate.markReady()
+                }
                 val (previousTab, setPreviousTab) = rememberSaveable { mutableStateOf("home") }
 
                 val (listenTogetherInTopBar) = rememberPreference(ListenTogetherInTopBarKey, defaultValue = true)
@@ -854,7 +1033,7 @@ class MainActivity : FragmentActivity() {
                             bottomInset +
                                 (if (!showRail && shouldShowNavigationBar) navPadding else 0.dp) +
                                 (if (useNewMiniPlayerDesign) MiniPlayerBottomSpacing else 0.dp) +
-                                MiniPlayerHeight,
+                                (if (retroStyle) RetroMiniPlayerHeight else MiniPlayerHeight),
                         expandedBound = maxHeight,
                     )
 
@@ -870,12 +1049,18 @@ class MainActivity : FragmentActivity() {
                         shouldShowNavigationBar,
                         playerBottomSheetState.isDismissed,
                         showRail,
+                        useNewMiniPlayerDesign,
+                        retroStyle,
                     ) {
                         var bottom = bottomInset
                         if (shouldShowNavigationBar && !showRail) {
                             bottom += NavigationBarHeight
                         }
-                        if (!playerBottomSheetState.isDismissed) bottom += MiniPlayerHeight
+                        if (!playerBottomSheetState.isDismissed) {
+                            // Con canción sonando, el mini reproductor tapa el final de las listas: se suma también
+                            // su separación con la barra de navegación y un pequeño margen para poder ver el último elemento entero.
+                            bottom += (if (retroStyle) RetroMiniPlayerHeight else MiniPlayerHeight) + (if (useNewMiniPlayerDesign) MiniPlayerBottomSpacing else 0.dp) + 16.dp
+                        }
                         windowsInsets
                             .only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top)
                             .add(WindowInsets(top = AppBarHeight, bottom = bottom))
@@ -1026,6 +1211,7 @@ class MainActivity : FragmentActivity() {
                     }
 
                 var showAccountDialog by remember { mutableStateOf(false) }
+                val (customAppTitle) = rememberPreference(CustomAppTitleKey, defaultValue = "")
 
                 val pauseListenHistory by rememberPreference(PauseListenHistoryKey, defaultValue = false)
                 val eventCount by database.eventCount().collectAsStateWithLifecycle(initialValue = 0)
@@ -1035,6 +1221,11 @@ class MainActivity : FragmentActivity() {
                     }
 
                 val baseBg = if (pureBlack) Color.Black else MaterialTheme.colorScheme.surfaceContainer
+                val (liquidGlassSetting) = rememberPreference(LiquidGlassKey, defaultValue = true)
+                val liquidGlassEnabled = liquidGlassSetting && !retroStyle
+                val liquidBackdrop = rememberLiquidBackdrop()
+                val glassBackdrop =
+                    if (liquidGlassEnabled && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) liquidBackdrop else null
                 val artistNameAliases by ArtistNameAliases.aliases.collectAsStateWithLifecycle()
 
                 CompositionLocalProvider(
@@ -1049,12 +1240,21 @@ class MainActivity : FragmentActivity() {
                     LocalListenTogetherManager provides listenTogetherManager,
                     LocalChangelogState provides showChangelog,
                     LocalArtistNameAliases provides artistNameAliases,
+                    LocalLiquidBackdrop provides glassBackdrop,
+                    com.metrolist.music.ui.component.LocalPlayerBackdrop provides
+                        (if (glassBackdrop == null) null else if (hasWallpaper) wallpaperBackdrop else meshBackdrop),
+                    com.metrolist.music.ui.component.LocalGlassFlatBackground provides
+                        (
+                            appBgMode == com.metrolist.music.constants.AppBackgroundMode.SOLID ||
+                                appBgMode == com.metrolist.music.constants.AppBackgroundMode.ANIMATED_GRADIENT
+                        ),
                 ) {
                     if (showChangelog.value) {
                         ChangelogScreen(onDismiss = { showChangelog.value = false })
                     }
 
                     Scaffold(
+                        containerColor = Color.Transparent,
                         snackbarHost = { SnackbarHost(snackbarHostState) },
                         topBar = {
                             AnimatedVisibility(
@@ -1065,55 +1265,100 @@ class MainActivity : FragmentActivity() {
                                 Row {
                                     TopAppBar(
                                         title = {
-                                            Text(
-                                                text = currentTitleRes?.let { stringResource(it) } ?: "",
-                                                style = MaterialTheme.typography.titleLarge,
-                                            )
-                                        },
-                                        actions = {
-                                            if (showHistoryButton) {
-                                                IconButton(onClick = { navController.navigate("history") }) {
-                                                    Icon(
-                                                        painter = painterResource(R.drawable.history),
-                                                        contentDescription = stringResource(R.string.history),
+                                            val titleText = if (navBackStackEntry?.destination?.route == Screens.Home.route && customAppTitle.isNotBlank()) {
+                                                customAppTitle
+                                            } else {
+                                                currentTitleRes?.let { stringResource(it) } ?: ""
+                                            }
+                                            val customIconFile = remember(customAppIconPath, customAppIconTimestamp) {
+                                                IconUtils.getCustomIconFile(this@MainActivity, customAppIconPath)?.takeIf { it.exists() }
+                                            }
+                                            Row(
+                                                verticalAlignment = Alignment.CenterVertically,
+                                                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                                            ) {
+                                                if (customIconFile != null && navBackStackEntry?.destination?.route == Screens.Home.route) {
+                                                    AsyncImage(
+                                                        model = ImageRequest.Builder(this@MainActivity)
+                                                            .data(customIconFile)
+                                                            .memoryCacheKey("custom_icon_${customAppIconPath}_${customAppIconTimestamp}")
+                                                            .diskCachePolicy(CachePolicy.DISABLED)
+                                                            .build(),
+                                                        contentDescription = null,
+                                                        contentScale = ContentScale.Crop,
+                                                        modifier = Modifier
+                                                            .size(28.dp)
+                                                            .clip(RoundedCornerShape(8.dp))
+                                                            .border(
+                                                                1.dp,
+                                                                Color.White.copy(alpha = if (pureBlack) 0.35f else 0.65f),
+                                                                RoundedCornerShape(8.dp),
+                                                            ),
                                                     )
                                                 }
-                                            }
-                                            IconButton(onClick = { navController.navigate("stats") }) {
-                                                Icon(
-                                                    painter = painterResource(R.drawable.stats),
-                                                    contentDescription = stringResource(R.string.stats),
+                                                Text(
+                                                    text = titleText,
+                                                    style = MaterialTheme.typography.titleLarge,
                                                 )
                                             }
-                                            if (listenTogetherInTopBar) {
-                                                IconButton(onClick = { navController.navigate("listen_together_from_topbar") }) {
-                                                    Icon(
-                                                        painter = painterResource(R.drawable.group_outlined),
-                                                        contentDescription = stringResource(R.string.together),
+                                        },
+                                        actions = {
+                                            Row(
+                                                verticalAlignment = Alignment.CenterVertically,
+                                                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                                modifier = Modifier.padding(end = 4.dp),
+                                            ) {
+                                                if (showHistoryButton) {
+                                                    LiquidGlassButton(
+                                                        onClick = { navController.navigate("history") },
+                                                        iconRes = R.drawable.history,
+                                                        size = 38.dp,
+                                                        iconSize = 20.dp,
+                                                        iconTint = MaterialTheme.colorScheme.onSurface,
                                                     )
                                                 }
-                                            }
-                                            IconButton(onClick = { showAccountDialog = true }) {
-                                                BadgedBox(badge = {
-                                                    if (latestVersionName != BuildConfig.BASE_VERSION_NAME) {
-                                                        Badge()
-                                                    }
-                                                }) {
-                                                    if (accountImageUrl != null) {
-                                                        AsyncImage(
-                                                            model = accountImageUrl,
-                                                            contentDescription = stringResource(R.string.account),
-                                                            modifier =
-                                                                Modifier
-                                                                    .size(24.dp)
-                                                                    .clip(CircleShape),
-                                                        )
-                                                    } else {
-                                                        Icon(
-                                                            painter = painterResource(R.drawable.account),
-                                                            contentDescription = stringResource(R.string.account),
-                                                            modifier = Modifier.size(24.dp),
-                                                        )
+                                                LiquidGlassButton(
+                                                    onClick = { navController.navigate("stats") },
+                                                    iconRes = R.drawable.stats,
+                                                    size = 38.dp,
+                                                    iconSize = 20.dp,
+                                                    iconTint = MaterialTheme.colorScheme.onSurface,
+                                                )
+                                                if (listenTogetherInTopBar) {
+                                                    LiquidGlassButton(
+                                                        onClick = { navController.navigate("listen_together_from_topbar") },
+                                                        iconRes = R.drawable.group_outlined,
+                                                        size = 38.dp,
+                                                        iconSize = 20.dp,
+                                                        iconTint = MaterialTheme.colorScheme.onSurface,
+                                                    )
+                                                }
+                                                LiquidGlassButton(
+                                                    onClick = { showAccountDialog = true },
+                                                    modifier = Modifier.size(38.dp),
+                                                ) {
+                                                    BadgedBox(badge = {
+                                                        if (latestVersionName != BuildConfig.BASE_VERSION_NAME) {
+                                                            Badge()
+                                                        }
+                                                    }) {
+                                                        if (accountImageUrl != null) {
+                                                            AsyncImage(
+                                                                model = accountImageUrl,
+                                                                contentDescription = stringResource(R.string.account),
+                                                                modifier =
+                                                                    Modifier
+                                                                        .size(22.dp)
+                                                                        .clip(CircleShape),
+                                                            )
+                                                        } else {
+                                                            Icon(
+                                                                painter = painterResource(R.drawable.account),
+                                                                contentDescription = stringResource(R.string.account),
+                                                                modifier = Modifier.size(20.dp),
+                                                                tint = MaterialTheme.colorScheme.onSurface,
+                                                            )
+                                                        }
                                                     }
                                                 }
                                             }
@@ -1121,21 +1366,21 @@ class MainActivity : FragmentActivity() {
                                         scrollBehavior = topAppBarScrollBehavior,
                                         colors =
                                             TopAppBarDefaults.topAppBarColors(
-                                                containerColor = if (pureBlack) Color.Black else MaterialTheme.colorScheme.surfaceContainer,
-                                                scrolledContainerColor = if (pureBlack) Color.Black else MaterialTheme.colorScheme.surfaceContainer,
+                                                containerColor = Color.Transparent,
+                                                scrolledContainerColor = if (pureBlack) Color.Black.copy(alpha = 0.55f) else MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.55f),
                                                 titleContentColor = MaterialTheme.colorScheme.onSurface,
-                                                actionIconContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                                                navigationIconContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                actionIconContentColor = MaterialTheme.colorScheme.onSurface,
+                                                navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
                                             ),
-                                        modifier =
-                                            Modifier.windowInsetsPadding(
-                                                if (showRail) {
-                                                    WindowInsets(left = NavigationBarHeight)
-                                                        .add(cutoutInsets.only(WindowInsetsSides.Start))
-                                                } else {
-                                                    cutoutInsets.only(WindowInsetsSides.Start + WindowInsetsSides.End)
-                                                },
-                                            ),
+                                        // El hueco del carril lateral se aplica como padding interno (windowInsets) y no
+                                        // sobre la barra, así el fondo de la barra ocupa todo el ancho en horizontal.
+                                        windowInsets =
+                                            if (showRail) {
+                                                WindowInsets(left = NavigationBarHeight)
+                                                    .add(TopAppBarDefaults.windowInsets)
+                                            } else {
+                                                TopAppBarDefaults.windowInsets
+                                            },
                                     )
                                 }
                             }
@@ -1258,6 +1503,8 @@ class MainActivity : FragmentActivity() {
                                                     val progress = playerBottomSheetState.progress
                                                     alpha =
                                                         if (progress > 0f ||
+                                                            glassBackdrop != null ||
+                                                            retroStyle ||
                                                             (useNewMiniPlayerDesign && !shouldShowNavigationBar)
                                                         ) {
                                                             0f
@@ -1288,7 +1535,7 @@ class MainActivity : FragmentActivity() {
                                             .graphicsLayer {
                                                 val progress = playerBottomSheetState.progress
                                                 alpha =
-                                                    if (progress > 0f || (useNewMiniPlayerDesign && !shouldShowNavigationBar)) 0f else 1f
+                                                    if (progress > 0f || glassBackdrop != null || retroStyle || (useNewMiniPlayerDesign && !shouldShowNavigationBar)) 0f else 1f
                                             }.background(baseBg),
                                 )
                             }
@@ -1298,7 +1545,19 @@ class MainActivity : FragmentActivity() {
                                 .fillMaxSize()
                                 .nestedScroll(topAppBarScrollBehavior.nestedScrollConnection),
                     ) {
-                        Row(Modifier.fillMaxSize()) {
+                        Row(
+                            Modifier
+                                .fillMaxSize()
+                                .then(
+                                    if (glassBackdrop != null) {
+                                        val glassBg = if (dynamicBackground || hasWallpaper) Color.Transparent else (appSolidColor ?: MaterialTheme.colorScheme.background)
+                                        Modifier.liquidGlassSource(glassBackdrop, glassBg)
+                                    } else {
+                                        Modifier
+                                    },
+                                ),
+                        ) {
+                            CompositionLocalProvider(LocalLiquidBackdrop provides (if (glassBackdrop == null) null else if (hasWallpaper) wallpaperBackdrop else meshBackdrop)) {
                             val onRailItemClick: (Screens, Boolean) -> Unit =
                                 remember(navController, coroutineScope, topAppBarScrollBehavior, playerBottomSheetState) {
                                     { screen: Screens, isSelected: Boolean ->
@@ -1403,7 +1662,8 @@ class MainActivity : FragmentActivity() {
                                     )
                                 }
                             }
-                        }
+                                                    }
+}
                     }
 
                     BottomSheetMenu(
@@ -1526,8 +1786,15 @@ class MainActivity : FragmentActivity() {
                     }
                 }
             }
-            }
+                    if (retroStyle) {
+                        RetroCrtOverlay()
+                    }
+                    }
+
         }
+            } // end MeshBackground
+            } // end CompositionLocalProvider(LocalThumbnailCornerRadius)
+        } // end MetrolistTheme
     }
 
     /**

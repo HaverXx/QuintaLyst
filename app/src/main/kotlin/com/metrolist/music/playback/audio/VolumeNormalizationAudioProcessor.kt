@@ -7,7 +7,9 @@ import androidx.media3.common.util.UnstableApi
 import timber.log.Timber
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
+import kotlin.math.abs
 import kotlin.math.pow
+import kotlin.math.tanh
 
 @UnstableApi
 class VolumeNormalizationAudioProcessor : BaseAudioProcessor() {
@@ -28,6 +30,9 @@ class VolumeNormalizationAudioProcessor : BaseAudioProcessor() {
     @Volatile
     private var currentGain = GainState(0, 1.0)
 
+    @Volatile
+    private var boostLinear = 1.0
+
     @Synchronized
     fun setTargetGain(gainMb: Int) {
         if (currentGain.targetGainMb != gainMb) {
@@ -35,6 +40,11 @@ class VolumeNormalizationAudioProcessor : BaseAudioProcessor() {
             currentGain = GainState(gainMb, linearGain)
             Timber.tag(TAG).d("Target gain set to $gainMb mB (Linear multiplier: $linearGain)")
         }
+    }
+
+    /** Extra user gain in dB applied on top of normalization, independent of [enabled]. */
+    fun setBoostDb(db: Float) {
+        boostLinear = 10.0.pow(db.coerceIn(0f, MAX_BOOST_DB) / 20.0)
     }
 
     override fun onConfigure(inputAudioFormat: AudioProcessor.AudioFormat): AudioProcessor.AudioFormat {
@@ -56,8 +66,10 @@ class VolumeNormalizationAudioProcessor : BaseAudioProcessor() {
     override fun queueInput(inputBuffer: ByteBuffer) {
         if (!inputBuffer.hasRemaining()) return
 
-        val gain = currentGain
-        val applyGain = enabled && gain.targetGainMb != 0
+        val gain = (if (enabled) currentGain.linearGain else 1.0) * boostLinear
+        val applyGain = gain != 1.0
+        // Only peaks pushed above full scale need limiting; attenuation stays bit-transparent.
+        val limit = gain > 1.0
         val sampleCount = inputBuffer.remaining() / bytesPerSample
         val output = replaceOutputBuffer(sampleCount * bytesPerSample)
 
@@ -70,7 +82,7 @@ class VolumeNormalizationAudioProcessor : BaseAudioProcessor() {
                     val sample = inputBuffer.getShort()
                     output.putShort(
                         if (applyGain) {
-                            (sample * gain.linearGain)
+                            (softLimit(sample * gain / 32768.0, limit) * 32768.0)
                                 .coerceIn(-32768.0, 32767.0)
                                 .toInt()
                                 .toShort()
@@ -88,7 +100,7 @@ class VolumeNormalizationAudioProcessor : BaseAudioProcessor() {
                     val sample = (b2 shl 16) or (b1 shl 8) or b0
                     val processed =
                         if (applyGain) {
-                            (sample * gain.linearGain)
+                            (softLimit(sample * gain / 8388608.0, limit) * 8388608.0)
                                 .coerceIn(-8388608.0, 8388607.0)
                                 .toInt()
                         } else {
@@ -104,7 +116,7 @@ class VolumeNormalizationAudioProcessor : BaseAudioProcessor() {
                     val sample = inputBuffer.getInt()
                     output.putInt(
                         if (applyGain) {
-                            (sample * gain.linearGain)
+                            (softLimit(sample * gain / 2147483648.0, limit) * 2147483648.0)
                                 .coerceIn(-2147483648.0, 2147483647.0)
                                 .toLong()
                                 .toInt()
@@ -119,7 +131,7 @@ class VolumeNormalizationAudioProcessor : BaseAudioProcessor() {
                     val sample = inputBuffer.getFloat()
                     output.putFloat(
                         if (applyGain) {
-                            (sample * gain.linearGain.toFloat()).coerceIn(-1.0f, 1.0f)
+                            softLimit(sample * gain, limit).toFloat()
                         } else {
                             sample
                         },
@@ -137,5 +149,18 @@ class VolumeNormalizationAudioProcessor : BaseAudioProcessor() {
 
     private companion object {
         const val TAG = "VolumeNormalizationProcessor"
+        const val MAX_BOOST_DB = 12f
+        const val KNEE = 0.8
+
+        /**
+         * Soft knee limiter: linear up to [KNEE], then a tanh curve that approaches full scale
+         * smoothly. Avoids the harsh distortion of hard clipping when gain pushes peaks past 0 dBFS.
+         */
+        fun softLimit(x: Double, enabled: Boolean): Double {
+            val a = abs(x)
+            if (!enabled || a <= KNEE) return x
+            val limited = KNEE + (1.0 - KNEE) * tanh((a - KNEE) / (1.0 - KNEE))
+            return if (x < 0) -limited else limited
+        }
     }
 }

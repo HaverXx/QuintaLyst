@@ -5,6 +5,7 @@
 
 package com.metrolist.music.ui.screens.settings
 
+import com.metrolist.music.ui.component.GlassCard
 import androidx.compose.animation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -175,7 +176,7 @@ fun ReleaseItem(release: ReleaseInfo) {
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        Card(
+        GlassCard(
             modifier = Modifier.fillMaxWidth(),
             colors = CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.surfaceContainer

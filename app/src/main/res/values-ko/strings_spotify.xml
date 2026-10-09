@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="import_from_spotify">Spotify에서 가져오기</string>
+    <string name="playlist_import_error">가져오기 실패: %1$s</string>
+    <string name="spotify_playlist_url">Spotify 재생목록 URL 또는 ID</string>
+    <string name="spotify_import_searching">YouTube Music에서 곡 검색 중…</string>
+    <string name="spotify_import_done">가져오기 완료: %2$d곡 중 %1$d곡 찾음</string>
+    <string name="spotify_import_invalid_url">잘못된 Spotify URL</string>
+    <string name="spotify_hub_title">Spotify</string>
+    <string name="spotify_import_card_desc">링크로 재생목록 가져오기</string>
+    <string name="spotify_jam_card_title">Jam 참여</string>
+    <string name="spotify_jam_card_desc">친구의 Jam 링크를 붙여넣으세요</string>
+    <string name="spotify_jam_dialog_title">Spotify Jam 참여</string>
+    <string name="spotify_jam_hint">Jam 링크</string>
+    <string name="spotify_jam_help">호스트가 공유한 링크를 붙여넣으세요. 대기열은 재생목록으로 저장되고 YouTube에서 검색됩니다.</string>
+    <string name="spotify_jam_join">참여</string>
+    <string name="spotify_jam_done">Jam 저장됨: %1$d곡</string>
+    <string name="spotify_jam_hidden">이 Jam은 Spotify 로그인 없이는 대기열을 공개하지 않습니다. 호스트에게 대기열을 재생목록으로 공유해 달라고 요청한 뒤 여기서 가져오세요.</string>
+</resources>

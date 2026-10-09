@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="import_from_spotify">Importuj ze Spotify</string>
+    <string name="playlist_import_error">Import nie powiódł się: %1$s</string>
+    <string name="spotify_playlist_url">URL lub ID playlisty Spotify</string>
+    <string name="spotify_import_searching">Wyszukiwanie utworów w YouTube Music…</string>
+    <string name="spotify_import_done">Import zakończony: znaleziono %1$d z %2$d utworów</string>
+    <string name="spotify_import_invalid_url">Nieprawidłowy URL Spotify</string>
+    <string name="spotify_hub_title">Spotify</string>
+    <string name="spotify_import_card_desc">Przenieś swoje playlisty linkiem</string>
+    <string name="spotify_jam_card_title">Dołącz do Jam</string>
+    <string name="spotify_jam_card_desc">Wklej link do Jam znajomego</string>
+    <string name="spotify_jam_dialog_title">Dołącz do Jam na Spotify</string>
+    <string name="spotify_jam_hint">Link do Jam</string>
+    <string name="spotify_jam_help">Wklej link udostępniony przez gospodarza. Kolejka zostanie zapisana jako playlista i wyszukana w YouTube.</string>
+    <string name="spotify_jam_join">Dołącz</string>
+    <string name="spotify_jam_done">Zapisano Jam: %1$d utworów</string>
+    <string name="spotify_jam_hidden">Ten Jam nie udostępnia kolejki bez logowania do Spotify. Poproś gospodarza o udostępnienie kolejki jako playlisty i zaimportuj ją tutaj.</string>
+</resources>

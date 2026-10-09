@@ -80,20 +80,16 @@ fun NavigationTitle(
         }
 
         onPlayAllClick?.let { playAllClick ->
-            OutlinedButton(
+            LiquidGlassButton(
                 onClick = playAllClick,
-                shape = RoundedCornerShape(12.dp),
-                border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)),
-                colors = ButtonDefaults.outlinedButtonColors(
-                    contentColor = MaterialTheme.colorScheme.primary
-                ),
-                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 2.dp),
-                modifier = Modifier
-                    .height(24.dp)
+                shape = RoundedCornerShape(50),
+                modifier = Modifier.height(26.dp),
             ) {
                 Text(
                     text = stringResource(R.string.play_all),
-                    style = MaterialTheme.typography.labelSmall
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(horizontal = 12.dp),
                 )
             }
         }

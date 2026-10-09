@@ -110,6 +110,7 @@ import com.metrolist.music.ui.component.DraggableScrollbar
 import com.metrolist.music.ui.component.EmptyPlaceholder
 import com.metrolist.music.ui.component.HideOnScrollFAB
 import com.metrolist.music.ui.component.IconButton
+import com.metrolist.music.ui.component.LiquidGlassButton
 import com.metrolist.music.ui.component.LocalMenuState
 import com.metrolist.music.ui.component.SongListItem
 import com.metrolist.music.ui.component.SortHeader
@@ -916,8 +917,11 @@ private fun AutoPlaylistHeader(
             horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterHorizontally),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            // Shuffle Button - Smaller secondary button
-            androidx.compose.material3.Surface(
+            // Shuffle Button - Liquid Glass
+            LiquidGlassButton(
+                size = 48.dp,
+                iconSize = 24.dp,
+                iconRes = R.drawable.shuffle,
                 onClick = {
                     playerConnection.playQueue(
                         ListQueue(
@@ -926,24 +930,14 @@ private fun AutoPlaylistHeader(
                         ),
                     )
                 },
-                shape = androidx.compose.foundation.shape.CircleShape,
-                color = MaterialTheme.colorScheme.surfaceVariant,
-                modifier = Modifier.size(48.dp),
-            ) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.shuffle),
-                        contentDescription = stringResource(R.string.shuffle),
-                        modifier = Modifier.size(24.dp),
-                    )
-                }
-            }
+            )
 
-            // Play Button - Larger primary circular button
-            Surface(
+            // Play Button - Larger primary circular liquid glass button
+            LiquidGlassButton(
+                size = 72.dp,
+                iconSize = 34.dp,
+                iconRes = R.drawable.play,
+                isActive = true,
                 onClick = {
                     playerConnection.playQueue(
                         ListQueue(
@@ -952,25 +946,13 @@ private fun AutoPlaylistHeader(
                         ),
                     )
                 },
-                color = MaterialTheme.colorScheme.primary,
-                shape = androidx.compose.foundation.shape.CircleShape,
-                modifier = Modifier.size(72.dp),
-            ) {
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier.fillMaxSize(),
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.play),
-                        contentDescription = stringResource(R.string.play),
-                        tint = MaterialTheme.colorScheme.onPrimary,
-                        modifier = Modifier.size(32.dp),
-                    )
-                }
-            }
+            )
 
-            // Menu Button - Smaller secondary button
-            Surface(
+            // Menu Button - Liquid Glass
+            LiquidGlassButton(
+                size = 48.dp,
+                iconSize = 24.dp,
+                iconRes = R.drawable.more_vert,
                 onClick = {
                     menuState.show {
                         AutoPlaylistMenu(
@@ -1008,21 +990,7 @@ private fun AutoPlaylistHeader(
                         )
                     }
                 },
-                shape = androidx.compose.foundation.shape.CircleShape,
-                color = MaterialTheme.colorScheme.surfaceVariant,
-                modifier = Modifier.size(48.dp),
-            ) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.more_vert),
-                        contentDescription = null,
-                        modifier = Modifier.size(24.dp),
-                    )
-                }
-            }
+            )
         }
     }
 }

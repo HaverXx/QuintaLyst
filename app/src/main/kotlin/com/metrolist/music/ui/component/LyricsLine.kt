@@ -9,6 +9,9 @@ import android.graphics.BlurMaskFilter
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.spring
+import androidx.compose.ui.draw.blur
+import androidx.compose.ui.draw.BlurredEdgeTreatment
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Canvas
@@ -155,8 +158,8 @@ internal fun LyricsLine(
         .padding(
             start = when (lyricsTextPosition) { LyricsPosition.LEFT, LyricsPosition.RIGHT -> 11.dp; LyricsPosition.CENTER -> 24.dp },
             end = when (lyricsTextPosition) { LyricsPosition.LEFT, LyricsPosition.RIGHT -> 11.dp; LyricsPosition.CENTER -> 24.dp },
-            top = if (item.isBackground) 0.dp else 12.dp,
-            bottom = if (item.isBackground) 2.dp else 12.dp // simplified gap logic
+            top = if (item.isBackground) 0.dp else 8.dp,
+            bottom = if (item.isBackground) 2.dp else 8.dp
         )
 
     val agentAlignment = when {
@@ -196,17 +199,28 @@ internal fun LyricsLine(
     }) {
         @Composable
         fun LyricContent() {
-            Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = agentAlignment) {
-                val inactiveAlpha = if (item.isBackground) 0.08f else 0.2f
-                val activeAlpha = 1f
-                val focusedAlpha = if (item.isBackground) 0.5f else 0.3f
-                val targetAlpha = if (!isSynced || item.isBackground || isActiveLine) {
+            // Estilo Beautiful Lyrics: opacidad idle/sung ~0.5, activa 1, blur por distancia y escala con muelle.
+            val blDistance = if (isSynced && displayedCurrentLineIndex >= 0) abs(index - displayedCurrentLineIndex) else 0
+            val blBlurTarget = if (isActiveLine || item.isBackground || !isSynced || !isAutoScrollEnabled) 0f else minOf(blDistance, 5) * 0.9f
+            val blBlur by animateFloatAsState(blBlurTarget, tween(300), label = "lyricsBlur")
+            val blScale by animateFloatAsState(
+                if (isActiveLine || !isSynced) 1f else 0.95f,
+                spring(dampingRatio = 0.7f, stiffness = 300f),
+                label = "lyricsScale",
+            )
+            val blOriginX = when (agentAlignment) { Alignment.Start -> 0f; Alignment.End -> 1f; else -> 0.5f }
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .graphicsLayer { scaleX = blScale; scaleY = blScale; transformOrigin = TransformOrigin(blOriginX, 0.5f) }
+                    .then(if (blBlur > 0.1f) Modifier.blur(blBlur.dp, BlurredEdgeTreatment.Unbounded) else Modifier),
+                horizontalAlignment = agentAlignment,
+            ) {
+                val inactiveAlpha = if (item.isBackground) 0.27f else 0.5f
+                val activeAlpha = if (item.isBackground) 0.8f else 1f
+                val focusedAlpha = if (item.isBackground) 0.27f else 0.51f
+                val targetAlpha = if (!isSynced || isActiveLine || (item.isBackground && bgVisible)) {
                     activeAlpha
-                } else if (isAutoScrollEnabled && displayedCurrentLineIndex >= 0) {
-                    when (abs(index - displayedCurrentLineIndex)) {
-                        0 -> focusedAlpha
-                        1 -> 0.2f; 2 -> 0.2f; 3 -> 0.15f; 4 -> 0.1f; else -> 0.08f
-                    }
                 } else inactiveAlpha
                 
                 val animatedAlpha by animateFloatAsState(targetAlpha, tween(250), label = "lyricsLineAlpha")
@@ -222,11 +236,11 @@ internal fun LyricsLine(
                 val lyricStyle = TextStyle(
                     fontSize = if (item.isBackground) (lyricsTextSize * 0.7f).sp else lyricsTextSize.sp,
                     fontWeight = FontWeight.Bold,
-                    fontStyle = if (item.isBackground) FontStyle.Italic else FontStyle.Normal,
+                    fontStyle = FontStyle.Normal,
                     lineHeight = if (item.isBackground) (lyricsTextSize * 0.7f * lyricsLineSpacing).sp else (lyricsTextSize * lyricsLineSpacing).sp,
-                    letterSpacing = (-0.5).sp,
-                    textAlign = agentTextAlign,
-                    fontFamily = MaterialTheme.typography.bodyLarge.fontFamily,
+                    letterSpacing = 0.sp,
+                                        textAlign = agentTextAlign,
+                    fontFamily = com.metrolist.music.ui.theme.LyricsFontFamily,
                     platformStyle = PlatformTextStyle(includeFontPadding = false),
                     lineHeightStyle = LineHeightStyle(
                         alignment = LineHeightStyle.Alignment.Center,
@@ -768,8 +782,9 @@ private fun WordLevelLyrics(
                                 }
                             }
                         }
-                        val baseAlpha = if (isWordSung || charLp > 0.99f) 1f else (focusedAlpha + (1f - focusedAlpha) * sungFactor)
-                        drawText(letterLayouts[i], color = expressiveAccent.copy(alpha = if (wordIdx == -1) focusedAlpha else baseAlpha))
+                        // Efecto máquina de escribir: la palabra solo aparece cuando le toca en la canción.
+                        val baseAlpha = if (isWordSung || charLp > 0.99f) 1f else sungFactor.coerceIn(0f, 1f)
+                        drawText(letterLayouts[i], color = expressiveAccent.copy(alpha = if (wordIdx == -1) 0f else baseAlpha))
                         if (!isWordSung && charLp > 0f && charLp < 1f) {
                             val fXL = charBounds.width * charLp
                             val eW = (charBounds.width * 0.45f).coerceAtLeast(1f)

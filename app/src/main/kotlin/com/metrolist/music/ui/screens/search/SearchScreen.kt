@@ -47,6 +47,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -65,6 +66,8 @@ import com.metrolist.music.constants.SearchSourceKey
 import com.metrolist.music.db.entities.SearchHistory
 import com.metrolist.music.playback.queues.YouTubeQueue
 import com.metrolist.music.ui.component.HideOnScrollFAB
+import com.metrolist.music.ui.component.liquidGlass
+import androidx.compose.foundation.layout.height
 import com.metrolist.music.utils.SearchRoutes
 import com.metrolist.music.utils.rememberEnumPreference
 import com.metrolist.music.utils.rememberPreference
@@ -181,7 +184,12 @@ fun SearchScreen(
             TopAppBar(
                 title = {
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .height(46.dp)
+                                .liquidGlass(cornerRadius = 23.dp, fallbackColor = Color.White.copy(alpha = 0.12f))
+                                .padding(start = 18.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         BasicTextField(
@@ -273,11 +281,12 @@ fun SearchScreen(
                 },
                 colors =
                     TopAppBarDefaults.topAppBarColors(
-                        containerColor = if (pureBlack) Color.Black else MaterialTheme.colorScheme.surfaceContainer,
+                        containerColor = Color.Transparent,
+                        scrolledContainerColor = Color.Transparent,
                     ),
             )
         },
-        containerColor = if (pureBlack) Color.Black else MaterialTheme.colorScheme.background,
+        containerColor = Color.Transparent,
     ) { paddingValues ->
         Box(
             modifier =

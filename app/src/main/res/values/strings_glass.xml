@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="spotify_hub_title">Spotify</string>
+    <string name="spotify_import_card_desc">Bring your playlists with a link</string>
+    <string name="spotify_jam_card_title">Join a Jam</string>
+    <string name="spotify_jam_card_desc">Paste a friend\'s Jam link</string>
+    <string name="spotify_jam_dialog_title">Join a Spotify Jam</string>
+    <string name="spotify_jam_hint">Jam link</string>
+    <string name="spotify_jam_help">Paste the link the host shared. The queue is saved as a playlist and matched on YouTube.</string>
+    <string name="spotify_jam_join">Join</string>
+    <string name="spotify_jam_done">Jam saved: %1$d songs</string>
+    <string name="spotify_jam_hidden">This Jam doesn\'t expose its queue without a Spotify login. Ask the host to share the queue as a playlist and import it here.</string>
+    <string name="settings_group_personalize">Personalize</string>
+    <string name="settings_group_listening">Listening</string>
+    <string name="settings_group_connections">Connections</string>
+    <string name="settings_group_library_data">Library &amp; data</string>
+    <string name="settings_group_privacy">Privacy</string>
+    <string name="settings_group_about">System &amp; help</string>
+</resources>

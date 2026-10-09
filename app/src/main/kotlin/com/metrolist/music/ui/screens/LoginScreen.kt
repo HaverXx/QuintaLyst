@@ -14,6 +14,7 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -300,12 +301,15 @@ fun LoginScreen(
         modifier =
             Modifier
                 .windowInsetsPadding(LocalPlayerAwareWindowInsets.current)
-                .fillMaxSize(),
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.surface),
     ) {
         AndroidView(
             modifier = Modifier.fillMaxSize(),
             factory = { webViewContext ->
                 WebView(webViewContext).apply {
+                    setBackgroundColor(android.graphics.Color.WHITE)
+                    setLayerType(android.view.View.LAYER_TYPE_HARDWARE, null)
                     webViewClient =
                         object : WebViewClient() {
                             override fun shouldOverrideUrlLoading(

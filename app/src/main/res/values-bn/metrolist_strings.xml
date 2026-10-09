@@ -483,7 +483,7 @@
     <string name="credits_view_repo">রিপোজিটোরি দেখুন</string>
     <string name="buy_mo_a_coffee">আমাকে এক কাপ কফি কিনে দাও!</string>
     <string name="community_and_info">কমিউনিটি ও তথ্য</string>
-    <string name="metrolist">মেট্রোলিস্ট</string>
+    <string name="metrolist">QUINTALYST</string>
     <string name="wanna_play_favorite_song">তাদের প্রিয় গানটি বাজাতে চান?</string>
     <string name="yeah">হ্যাঁ!</string>
     <string name="stands_with_palestine">এই প্রকল্পটি ফিলিস্তিনের পাশে আছে 🇵🇸</string>
@@ -654,7 +654,7 @@
     <string name="wrapped_total_artists_subtitle">অনন্য শিল্পী!</string>
     <string name="wrapped_total_songs_title">আপনি শুনেছেন</string>
     <string name="wrapped_total_songs_subtitle">অনন্য গান!</string>
-    <string name="wrapped_intro_title">মেট্রোলিস্ট</string>
+    <string name="wrapped_intro_title">QUINTALYST</string>
     <string name="wrapped_intro_subtitle">এই সারা বছর ধরে আপনি কী শুনে আসছেন, তা দেখার সময় হয়েছে…</string>
     <string name="wrapped_intro_button">চলুন যাই!</string>
     <string name="wrapped_logo_content_description">মেট্রোলিস্ট লোগো</string>
@@ -753,7 +753,7 @@
     <string name="recognition_notification_processing">শনাক্ত করা হচ্ছে…</string>
     <string name="recognition_notification_no_match">কোনো মিল খুঁজে পাওয়া যায়নি</string>
     <string name="recognition_notification_failed">শনাক্তকরণ ব্যর্থ হয়েছে</string>
-    <string name="listen_on_metrolist">মেট্রোলিস্টে শুনুন</string>
+    <string name="listen_on_metrolist">QuintaLyst-এ শুনুন</string>
     <string name="map_csv_columns">CSV কলামগুলি ম্যাপ করুন</string>
     <string name="first_row_is_header">প্রথম সারিটি হেডার</string>
     <string name="artist_name_column">শিল্পীর নামের কলাম</string>

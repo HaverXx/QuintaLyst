@@ -20,7 +20,10 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.size
+import androidx.compose.ui.Alignment
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -73,16 +76,21 @@ fun <E> ChipsRow(
         Spacer(Modifier.width(12.dp))
 
         chips.forEach { (value, label) ->
-            FilterChip(
-                label = { Text(label) },
-                selected = currentValue == value,
-                colors = FilterChipDefaults.filterChipColors(
-                    containerColor = containerColor,
-                ),
+            val isSelected = currentValue == value
+            LiquidGlassButton(
                 onClick = { onValueUpdate(value) },
-                shape = RoundedCornerShape(16.dp),
-                border = null
-            )
+                shape = RoundedCornerShape(18.dp),
+                cornerRadius = 18.dp,
+                isActive = isSelected,
+                modifier = Modifier.height(36.dp),
+            ) {
+                Text(
+                    text = label,
+                    style = MaterialTheme.typography.labelLarge,
+                    color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.padding(horizontal = 14.dp),
+                )
+            }
 
             Spacer(Modifier.width(8.dp))
         }
@@ -118,12 +126,19 @@ fun <Int> ChoiceChipsRow(
         var expanded by remember { mutableStateOf(false) }
 
         Column {
-            AssistChip(
+            LiquidGlassButton(
                 onClick = {
                     expanded = !expanded
                     expandIconDegree -= 180
                 },
-                label = {
+                shape = RoundedCornerShape(18.dp),
+                cornerRadius = 18.dp,
+                modifier = Modifier.height(36.dp),
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(start = 14.dp, end = 8.dp),
+                ) {
                     Text(
                         text =
                         when (selectedOption) {
@@ -132,22 +147,17 @@ fun <Int> ChoiceChipsRow(
                             OptionStats.YEARS -> stringResource(id = R.string.years)
                             OptionStats.CONTINUOUS -> stringResource(id = R.string.continuous)
                         },
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.onSurface,
                     )
-                },
-                trailingIcon = {
                     Icon(
                         painter = painterResource(R.drawable.expand_more),
                         contentDescription = null,
-                        modifier = Modifier.graphicsLayer(rotationZ = rotationAnimation),
+                        tint = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.size(18.dp).graphicsLayer(rotationZ = rotationAnimation),
                     )
-                },
-                shape = RoundedCornerShape(16.dp),
-                border = null,
-                colors = AssistChipDefaults.assistChipColors(
-                    containerColor = containerColor,
-                    labelColor = MaterialTheme.colorScheme.onSurface
-                )
-            )
+                }
+            }
 
             AnimatedVisibility(
                 visible = expanded,
@@ -191,16 +201,21 @@ fun <Int> ChoiceChipsRow(
                 chips.forEach { (value, label) ->
                     Spacer(Modifier.width(8.dp))
 
-                    FilterChip(
-                        label = { Text(label) },
-                        selected = currentValue == value,
-                        colors = FilterChipDefaults.filterChipColors(
-                            containerColor = containerColor,
-                        ),
+                    val isSelected = currentValue == value
+                    LiquidGlassButton(
                         onClick = { onValueUpdate(value) },
-                        shape = RoundedCornerShape(16.dp),
-                        border = null
-                    )
+                        shape = RoundedCornerShape(18.dp),
+                        cornerRadius = 18.dp,
+                        isActive = isSelected,
+                        modifier = Modifier.height(36.dp),
+                    ) {
+                        Text(
+                            text = label,
+                            style = MaterialTheme.typography.labelLarge,
+                            color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.padding(horizontal = 14.dp),
+                        )
+                    }
                 }
             }
         }

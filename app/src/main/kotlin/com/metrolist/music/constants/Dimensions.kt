@@ -7,6 +7,7 @@ package com.metrolist.music.constants
 
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
@@ -20,6 +21,7 @@ const val CONTENT_TYPE_PLAYLIST = 5
 val NavigationBarHeight = 80.dp
 val SlimNavBarHeight = 64.dp
 val MiniPlayerHeight = 64.dp
+val RetroMiniPlayerHeight = 104.dp
 val MinMiniPlayerHeight = 16.dp
 val MiniPlayerBottomSpacing = 8.dp // Space between MiniPlayer and NavigationBar
 val QueuePeekHeight = 64.dp
@@ -33,7 +35,10 @@ val SmallGridThumbnailHeight = 104.dp
 val GridThumbnailHeight = 128.dp
 val AlbumThumbnailSize = 144.dp
 
-val ThumbnailCornerRadius = 3.dp
+val ThumbnailCornerRadius = 24.dp
+
+/** Overridable corner radius — set by MainActivity from user preferences. */
+val LocalThumbnailCornerRadius = compositionLocalOf { ThumbnailCornerRadius }
 
 val PlayerHorizontalPadding = 32.dp
 

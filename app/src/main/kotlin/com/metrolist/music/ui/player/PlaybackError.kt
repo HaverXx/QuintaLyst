@@ -177,7 +177,7 @@ fun PlaybackError(
         ) {
             Button(
                 onClick = retry,
-                shape = RoundedCornerShape(20.dp),
+                shape = RoundedCornerShape(50),
                 colors =
                 ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.primary,
@@ -195,9 +195,9 @@ fun PlaybackError(
             OutlinedButton(
                 onClick = {
                     val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                    clipboard.setPrimaryClip(ClipData.newPlainText("Metrolist Playback Error", errorReport))
+                    clipboard.setPrimaryClip(ClipData.newPlainText("QuintaLyst Playback Error", errorReport))
                 },
-                shape = RoundedCornerShape(20.dp),
+                shape = RoundedCornerShape(50),
             ) {
                 Icon(
                     painter = painterResource(R.drawable.content_copy),
@@ -229,7 +229,7 @@ private fun buildPlaybackErrorReport(
     reportedAt: Instant,
 ): String =
     buildString {
-        appendLine("Metrolist Playback Error Report")
+        appendLine("QuintaLyst Playback Error Report")
         appendLine("================================")
         appendLine("Time: $reportedAt")
         appendLine("App version: ${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})")

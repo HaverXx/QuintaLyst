@@ -5,6 +5,7 @@
 
 package com.metrolist.music.ui.screens.settings
 
+import com.metrolist.music.ui.component.GlassOutlinedButton
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -108,7 +109,7 @@ fun AccountSettings(
 
     Column(
         modifier = Modifier
-            .background(MaterialTheme.colorScheme.surfaceContainer)
+            .background(androidx.compose.ui.graphics.Color.Transparent)
             .padding(16.dp)
             .verticalScroll(rememberScrollState())
     ) {
@@ -278,7 +279,7 @@ fun AccountSettings(
                     icon = if (!isLoggedIn) painterResource(R.drawable.login) else null,
                     trailingContent = {
                         if (isLoggedIn) {
-                            OutlinedButton(
+                            GlassOutlinedButton(
                                 onClick = {
                                     Timber.d("[LOGOUT] User clicked logout button, showing dialog")
                                     showLogoutDialog = true

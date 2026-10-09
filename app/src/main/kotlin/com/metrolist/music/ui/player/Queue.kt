@@ -5,6 +5,13 @@
 
 package com.metrolist.music.ui.player
 
+import com.metrolist.music.ui.component.GlassOutlinedButton
+import com.metrolist.music.ui.component.GlassButton
+import com.metrolist.music.ui.component.LocalLiquidBackdrop
+import com.metrolist.music.ui.component.liquidGlass
+import com.metrolist.music.ui.component.LiquidGlassButton
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.foundation.layout.BoxScope
 import android.annotation.SuppressLint
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
@@ -83,6 +90,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalClipboard
@@ -150,6 +158,7 @@ fun Queue(
     playerBottomSheetState: BottomSheetState,
     modifier: Modifier = Modifier,
     background: Color,
+    coverTint: Color = Color.Unspecified,
     onBackgroundColor: Color,
     TextBackgroundColor: Color,
     textButtonColor: Color,
@@ -256,11 +265,46 @@ fun Queue(
         }
     }
 
+    // Tinte con el color dominante de la portada; se anima al cambiar de canción (transición suave).
+    val glassBase = MaterialTheme.colorScheme.surfaceContainer
+    val animatedCoverTint by androidx.compose.animation.animateColorAsState(
+        targetValue = if (coverTint == Color.Unspecified) Color.Transparent else coverTint.copy(alpha = 0.50f),
+        animationSpec = androidx.compose.animation.core.tween(durationMillis = 900),
+        label = "queueCoverTint",
+    )
+    val glassPanelColor = animatedCoverTint.compositeOver(glassBase.copy(alpha = 0.58f))
+    val queuePanelBackdrop = LocalLiquidBackdrop.current
+
     BottomSheet(
         state = state,
         modifier = modifier,
+        collapsedCornerRadius = 0.dp,
         background = {
-            Box(Modifier.fillMaxSize().background(Color.Unspecified))
+            // Panel de cristal esmerilado: desenfoca lo que hay detrás, se tiñe con el color de la portada
+            // y no lleva borde ni esquinas redondeadas.
+            Box(
+                Modifier
+                    .fillMaxSize()
+                    .then(
+                        if (pureBlack) {
+                            Modifier
+                        } else if (queuePanelBackdrop != null) {
+                            Modifier.liquidGlass(
+                                cornerRadius = 0.dp,
+                                fallbackColor = glassPanelColor,
+                                refraction = 0.dp,
+                                bezel = 1.dp,
+                                blur = 28.dp,
+                                chromaticAberration = 0f,
+                                saturation = 1.2f,
+                                tint = glassPanelColor,
+                                edges = false,
+                            )
+                        } else {
+                            Modifier.background(glassPanelColor)
+                        },
+                    ),
+            )
         },
         collapsedContent = {
             if (useNewPlayerDesign) {
@@ -383,13 +427,10 @@ fun Queue(
 
                     Spacer(modifier = Modifier.weight(1f))
 
-                    Box(
-                        modifier =
-                            Modifier
-                                .size(buttonSize)
-                                .clip(CircleShape)
-                                .background(textButtonColor)
-                                .clickable {
+                    LiquidGlassButton(
+                        shape = CircleShape,
+                        modifier = Modifier.size(buttonSize),
+                        onClick = {
                                     menuState.show {
                                         PlayerMenu(
                                             mediaMetadata = mediaMetadata,
@@ -405,13 +446,12 @@ fun Queue(
                                         )
                                     }
                                 },
-                        contentAlignment = Alignment.Center,
                     ) {
                         Icon(
                             painter = painterResource(id = R.drawable.more_vert),
                             contentDescription = null,
                             modifier = Modifier.size(iconSize),
-                            tint = iconButtonColor,
+                            tint = Color.White,
                         )
                     }
                 }
@@ -429,7 +469,7 @@ fun Queue(
                                     .only(WindowInsetsSides.Bottom + WindowInsetsSides.Horizontal),
                             ),
                 ) {
-                    TextButton(
+                    GlassOutlinedButton(
                         onClick = { state.expandSoft() },
                         modifier = Modifier.weight(1f),
                     ) {
@@ -456,7 +496,7 @@ fun Queue(
                         }
                     }
 
-                    TextButton(
+                    GlassOutlinedButton(
                         enabled = !isListenTogetherGuest,
                         onClick = {
                             if (!isListenTogetherGuest) {
@@ -508,7 +548,7 @@ fun Queue(
                         }
                     }
 
-                    TextButton(
+                    GlassOutlinedButton(
                         onClick = {
                             onToggleLyrics()
                         },
@@ -598,7 +638,7 @@ fun Queue(
                                 horizontalAlignment = Alignment.CenterHorizontally,
                             ) {
                                 if (isAtDefault) {
-                                    Button(
+                                    GlassButton(
                                         onClick = {
                                             coroutineScope.launch {
                                                 context.safeDataStoreEdit { settings ->
@@ -619,7 +659,7 @@ fun Queue(
                                         Text(stringResource(R.string.set_as_default))
                                     }
                                 } else {
-                                    OutlinedButton(
+                                    GlassOutlinedButton(
                                         onClick = {
                                             coroutineScope.launch {
                                                 context.safeDataStoreEdit { settings ->
@@ -637,7 +677,7 @@ fun Queue(
                                     }
                                 }
 
-                                OutlinedButton(
+                                GlassOutlinedButton(
                                     onClick = {
                                         showSleepTimerDialog = false
                                         playerConnection.service.sleepTimer?.start(
@@ -846,7 +886,8 @@ fun Queue(
                                             )
                                         } else {
                                             if (!isListenTogetherGuest) {
-                                                IconButton(
+                                                QueueGlassIconButton(
+                                                    lightweight = true,
                                                     onClick = {
                                                         menuState.show {
                                                             QueueMenu(
@@ -871,7 +912,8 @@ fun Queue(
                                                 }
                                             }
                                             if (!locked && !isListenTogetherGuest) {
-                                                IconButton(
+                                                QueueGlassIconButton(
+                                                    lightweight = true,
                                                     onClick = { },
                                                     modifier = Modifier.draggableHandle(),
                                                 ) {
@@ -969,7 +1011,8 @@ fun Queue(
                                 mediaMetadata = item.metadata!!,
                                 trailingContent = {
                                     if (!isListenTogetherGuest) {
-                                        IconButton(
+                                        QueueGlassIconButton(
+                                            lightweight = true,
                                             onClick = {
                                                 playerConnection.service.playNextAutomix(
                                                     item,
@@ -982,7 +1025,8 @@ fun Queue(
                                                 contentDescription = null,
                                             )
                                         }
-                                        IconButton(
+                                        QueueGlassIconButton(
+                                            lightweight = true,
                                             onClick = {
                                                 playerConnection.service.addToQueueAutomix(
                                                     item,
@@ -1068,7 +1112,7 @@ fun Queue(
                     exit = fadeOut() + slideOutVertically { it },
                 ) {
                     Row {
-                        IconButton(
+                        QueueGlassIconButton(
                             onClick = { locked = !locked },
                             modifier = Modifier.padding(horizontal = 6.dp),
                         ) {
@@ -1123,7 +1167,7 @@ fun Queue(
                             .height(48.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    IconButton(
+                    QueueGlassIconButton(
                         onClick = onExitSelectionMode,
                     ) {
                         Icon(
@@ -1148,7 +1192,7 @@ fun Queue(
                             }
                         },
                     )
-                    IconButton(
+                    QueueGlassIconButton(
                         enabled = count > 0,
                         onClick = {
                             menuState.show {
@@ -1201,7 +1245,7 @@ fun Queue(
                             .only(WindowInsetsSides.Bottom + WindowInsetsSides.Horizontal),
                     ).padding(12.dp),
         ) {
-            IconButton(
+            QueueGlassIconButton(
                 enabled = !isListenTogetherGuest,
                 modifier = Modifier.align(Alignment.CenterStart),
                 onClick = {
@@ -1231,7 +1275,7 @@ fun Queue(
                 modifier = Modifier.align(Alignment.Center),
             )
 
-            IconButton(
+            QueueGlassIconButton(
                 enabled = !isListenTogetherGuest,
                 modifier = Modifier.align(Alignment.CenterEnd),
                 onClick = playerConnection.player::toggleRepeatMode,
@@ -1283,35 +1327,18 @@ private fun PlayerQueueButton(
     textBackgroundColor: Color,
     playerBackground: PlayerBackgroundStyle,
 ) {
-    val buttonModifier =
-        Modifier
-            .clip(shape)
-            .clickable(enabled = enabled, onClick = onClick)
-
-    val alphaFactor = if (enabled) 1f else 0.35f
-
-    val appliedModifier =
-        if (isActive) {
-            modifier.then(buttonModifier.background(textButtonColor)).alpha(alphaFactor)
-        } else {
-            modifier
-                .then(
-                    buttonModifier.border(
-                        width = 1.dp,
-                        color = textButtonColor.copy(alpha = 0.3f),
-                        shape = shape,
-                    ),
-                ).alpha(alphaFactor)
-        }
-
-    Box(
-        modifier = appliedModifier,
-        contentAlignment = Alignment.Center,
+    // Todos los botones de esta fila son cristal líquido (mismo que anterior/siguiente); el activo se tiñe.
+    LiquidGlassButton(
+        onClick = onClick,
+        enabled = enabled,
+        shape = CircleShape,
+        isActive = isActive,
+        modifier = modifier.alpha(if (enabled) 1f else 0.4f),
     ) {
         if (text != null) {
             Text(
                 text = text,
-                color = iconButtonColor.copy(alpha = if (enabled) 1f else 0.6f),
+                color = Color.White,
                 fontSize = 10.sp,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
@@ -1322,27 +1349,45 @@ private fun PlayerQueueButton(
                         .basicMarquee(),
             )
         } else {
-            val baseTint =
-                if (isActive) {
-                    iconButtonColor
-                } else {
-                    when (playerBackground) {
-                        PlayerBackgroundStyle.BLUR, PlayerBackgroundStyle.GRADIENT -> {
-                            Color.White
-                        }
-
-                        PlayerBackgroundStyle.DEFAULT -> {
-                            MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-                        }
-                    }
-                }
-            val finalTint = if (enabled) baseTint else baseTint.copy(alpha = 0.5f)
             Icon(
                 painter = painterResource(id = icon),
                 contentDescription = null,
                 modifier = Modifier.size(iconSize),
-                tint = finalTint,
+                tint = if (isActive) Color.White else Color.White.copy(alpha = 0.9f),
             )
         }
+    }
+}
+
+/**
+ * Botón de icono de cristal líquido para la cola. En las filas ([lightweight]) se dibuja sin
+ * refracción (mismo degradado y canto de luz) para no recalcular un shader por cada canción.
+ */
+@Composable
+private fun QueueGlassIconButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    lightweight: Boolean = false,
+    content: @Composable BoxScope.() -> Unit,
+) {
+    if (lightweight) {
+        CompositionLocalProvider(LocalLiquidBackdrop provides null) {
+            LiquidGlassButton(
+                onClick = onClick,
+                enabled = enabled,
+                shape = CircleShape,
+                modifier = modifier.size(36.dp),
+                content = content,
+            )
+        }
+    } else {
+        LiquidGlassButton(
+            onClick = onClick,
+            enabled = enabled,
+            shape = CircleShape,
+            modifier = modifier.size(42.dp),
+            content = content,
+        )
     }
 }

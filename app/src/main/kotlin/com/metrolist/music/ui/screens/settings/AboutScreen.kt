@@ -5,6 +5,8 @@
 
 package com.metrolist.music.ui.screens.settings
 
+import com.metrolist.music.ui.component.GlassOutlinedButton
+import com.metrolist.music.ui.component.GlassButton
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -23,6 +25,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import com.metrolist.music.ui.component.glassCard
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
@@ -190,19 +193,19 @@ private fun DeveloperSocials(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        FilledTonalButton(
+        GlassOutlinedButton(
             onClick = { uriHandler.openUri("https://metrolist.cc") },
             modifier = Modifier.weight(1f).height(48.dp)
         ) {
             Icon(painterResource(R.drawable.language), contentDescription = null)
         }
-        FilledTonalButton(
+        GlassOutlinedButton(
             onClick = { uriHandler.openUri("https://github.com/mostafaalagamy") },
             modifier = Modifier.weight(1f).height(48.dp)
         ) {
             Icon(painterResource(R.drawable.github), contentDescription = null)
         }
-        FilledTonalButton(
+        GlassOutlinedButton(
             onClick = { uriHandler.openUri("https://www.instagram.com/mostafaalagamy") },
             modifier = Modifier.weight(1f).height(48.dp)
         ) {
@@ -242,9 +245,10 @@ fun AboutScreen(
         Spacer(Modifier.height(16.dp))
 
         // App Header Section
-        ElevatedCard(
-            shape = RoundedCornerShape(32.dp),
-            modifier = Modifier.fillMaxWidth()
+        androidx.compose.material3.Card(
+            shape = RoundedCornerShape(28.dp),
+            colors = androidx.compose.material3.CardDefaults.cardColors(containerColor = Color.Transparent),
+            modifier = Modifier.fillMaxWidth().glassCard(28.dp)
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -283,8 +287,8 @@ fun AboutScreen(
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Surface(
-                            shape = RoundedCornerShape(8.dp),
-                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
+                            shape = CircleShape,
+                            color = Color.White.copy(alpha = 0.14f)
                         ) {
                             Text(
                                 text = BuildConfig.VERSION_NAME,
@@ -296,8 +300,8 @@ fun AboutScreen(
                         }
                         
                         Surface(
-                            shape = RoundedCornerShape(8.dp),
-                            color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f)
+                            shape = CircleShape,
+                            color = Color.White.copy(alpha = 0.14f)
                         ) {
                             Text(
                                 text = BuildConfig.ARCHITECTURE.uppercase(),
@@ -310,8 +314,8 @@ fun AboutScreen(
 
                         if (BuildConfig.DEBUG) {
                             Surface(
-                                shape = RoundedCornerShape(8.dp),
-                                color = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.5f)
+                                shape = CircleShape,
+                                color = Color.White.copy(alpha = 0.14f)
                             ) {
                                 Text(
                                     text = "DEBUG",
@@ -330,9 +334,10 @@ fun AboutScreen(
         Spacer(Modifier.height(24.dp))
 
         // Lead Developer Hero Card
-        ElevatedCard(
-            shape = RoundedCornerShape(32.dp),
-            modifier = Modifier.fillMaxWidth()
+        androidx.compose.material3.Card(
+            shape = RoundedCornerShape(28.dp),
+            colors = androidx.compose.material3.CardDefaults.cardColors(containerColor = Color.Transparent),
+            modifier = Modifier.fillMaxWidth().glassCard(28.dp)
         ) {
             Column(
                 modifier = Modifier.padding(24.dp),
@@ -389,7 +394,7 @@ fun AboutScreen(
                 
                 Spacer(Modifier.height(16.dp))
                 
-                Button(
+                GlassButton(
                     onClick = { uriHandler.openUri("https://buymeacoffee.com/mostafaalagamy") },
                     modifier = Modifier.fillMaxWidth(),
                     shape = CircleShape,
@@ -444,7 +449,7 @@ fun AboutScreen(
                                 Surface(
                                     onClick = { uriHandler.openUri(contributor.sponsorUrl) },
                                     shape = CircleShape,
-                                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
+                                    color = Color.White.copy(alpha = 0.14f),
                                     modifier = Modifier.size(36.dp)
                                 ) {
                                     Box(contentAlignment = Alignment.Center) {

@@ -324,6 +324,13 @@ class App :
                     // Allow reading from disk cache as fallback when network is unavailable
                     networkCachePolicy(CachePolicy.ENABLED)
                 }
+                components {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                        add(coil3.gif.AnimatedImageDecoder.Factory())
+                    } else {
+                        add(coil3.gif.GifDecoder.Factory())
+                    }
+                }
             }.build()
     }
 

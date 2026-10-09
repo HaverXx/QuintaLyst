@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="import_from_spotify">Імпорт зі Spotify</string>
+    <string name="playlist_import_error">Помилка імпорту: %1$s</string>
+    <string name="spotify_playlist_url">URL або ID плейлиста Spotify</string>
+    <string name="spotify_import_searching">Пошук треків у YouTube Music…</string>
+    <string name="spotify_import_done">Імпорт завершено: знайдено %1$d з %2$d треків</string>
+    <string name="spotify_import_invalid_url">Недійсний URL Spotify</string>
+    <string name="spotify_hub_title">Spotify</string>
+    <string name="spotify_import_card_desc">Перенеси плейлисти за посиланням</string>
+    <string name="spotify_jam_card_title">Приєднатися до Jam</string>
+    <string name="spotify_jam_card_desc">Встав посилання на Jam друга</string>
+    <string name="spotify_jam_dialog_title">Приєднатися до Jam Spotify</string>
+    <string name="spotify_jam_hint">Посилання на Jam</string>
+    <string name="spotify_jam_help">Встав посилання від організатора. Чергу буде збережено як плейлист і знайдено на YouTube.</string>
+    <string name="spotify_jam_join">Приєднатися</string>
+    <string name="spotify_jam_done">Jam збережено: %1$d треків</string>
+    <string name="spotify_jam_hidden">Цей Jam не показує чергу без входу в Spotify. Попроси організатора поділитися чергою як плейлистом та імпортуй її тут.</string>
+</resources>

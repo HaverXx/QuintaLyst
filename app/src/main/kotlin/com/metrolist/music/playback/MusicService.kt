@@ -196,6 +196,7 @@ import com.metrolist.music.models.PersistQueue
 import com.metrolist.music.models.toMediaMetadata
 import com.metrolist.music.playback.alarm.MusicAlarmScheduler
 import com.metrolist.music.playback.alarm.MusicAlarmStore
+import com.metrolist.music.playback.audio.AudioLevelAudioProcessor
 import com.metrolist.music.playback.audio.SilenceDetectorAudioProcessor
 import com.metrolist.music.playback.queues.EmptyQueue
 import com.metrolist.music.playback.queues.ListQueue
@@ -206,6 +207,7 @@ import com.metrolist.music.playback.queues.filterExplicit
 import com.metrolist.music.playback.queues.filterVideoSongs
 import com.metrolist.music.constants.LoudnessLevel
 import com.metrolist.music.constants.LoudnessLevelKey
+import com.metrolist.music.constants.VolumeBoostDbKey
 import com.metrolist.music.utils.CoilBitmapLoader
 import com.metrolist.music.utils.NetworkConnectivityObserver
 import com.metrolist.music.utils.ScrobbleManager
@@ -749,7 +751,7 @@ class MusicService :
         audioQuality = startupPrefs!![AudioQualityKey]?.let { value ->
             if (value == "VERY_HIGH") com.metrolist.music.constants.AudioQuality.HIGH
             else com.metrolist.music.constants.AudioQuality.entries.find { it.name == value }
-        } ?: com.metrolist.music.constants.AudioQuality.AUTO
+        } ?: com.metrolist.music.constants.AudioQuality.HIGH
         playerVolume = MutableStateFlow((startupPrefs!![PlayerVolumeKey] ?: 1f).coerceIn(0f, 1f))
 
         initializeCast()
@@ -796,7 +798,7 @@ class MusicService :
                     it[AudioQualityKey]?.let { value ->
                         if (value == "VERY_HIGH") com.metrolist.music.constants.AudioQuality.HIGH
                         else com.metrolist.music.constants.AudioQuality.entries.find { it.name == value }
-                    } ?: com.metrolist.music.constants.AudioQuality.AUTO
+                    } ?: com.metrolist.music.constants.AudioQuality.HIGH
                 }.distinctUntilChanged()
                 .collect { newQuality ->
                     val oldQuality = audioQuality
@@ -932,6 +934,13 @@ class MusicService :
             loudnessLevelCached = loudnessLevel
             setupAudioNormalization()
         }
+
+        dataStore.data
+            .map { it[VolumeBoostDbKey] ?: 0f }
+            .distinctUntilChanged()
+            .collectLatest(scope) { boostDb ->
+                playerNormalizationProcessors.values.forEach { it.setBoostDb(boostDb) }
+            }
 
         combine(
             dataStore.data.map { it[AudioOffload] ?: false },
@@ -1336,6 +1345,9 @@ class MusicService :
         createdPlayer = player
 
         playerNormalizationProcessors[player] = normalizationProcessor
+        normalizationProcessor.setBoostDb(
+            prefs?.get(VolumeBoostDbKey) ?: runBlocking { dataStore.get(VolumeBoostDbKey, 0f) },
+        )
         playerSilenceProcessors[player] = silenceProcessor
         playerEqualizerProcessors[player] = eqProcessor
         equalizerService.addAudioProcessor(eqProcessor)
@@ -4018,7 +4030,7 @@ class MusicService :
             enableAudioTrackPlaybackParams: Boolean,
         ) = DefaultAudioSink
             .Builder(this@MusicService)
-            .setEnableFloatOutput(enableFloatOutput)
+            .setEnableFloatOutput(true)
             .setEnableAudioTrackPlaybackParams(useAudioTrackPlaybackParams)
             .setAudioProcessorChain(
                 DefaultAudioSink.DefaultAudioProcessorChain(
@@ -4026,6 +4038,7 @@ class MusicService :
                         normalizationProcessor,
                         eqProcessor,
                         silenceProcessor,
+                        AudioLevelAudioProcessor(),
                     ),
                     SilenceSkippingAudioProcessor(2_000_000, 20_000, 256),
                     SonicAudioProcessor(),

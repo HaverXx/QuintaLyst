@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="import_from_spotify">นำเข้าจาก Spotify</string>
+    <string name="playlist_import_error">นำเข้าไม่สำเร็จ: %1$s</string>
+    <string name="spotify_playlist_url">URL หรือ ID เพลย์ลิสต์ Spotify</string>
+    <string name="spotify_import_searching">กำลังค้นหาเพลงบน YouTube Music…</string>
+    <string name="spotify_import_done">นำเข้าเสร็จสิ้น: พบ %1$d จาก %2$d เพลง</string>
+    <string name="spotify_import_invalid_url">URL Spotify ไม่ถูกต้อง</string>
+    <string name="spotify_hub_title">Spotify</string>
+    <string name="spotify_import_card_desc">นำเพลย์ลิสต์ของคุณมาด้วยลิงก์</string>
+    <string name="spotify_jam_card_title">เข้าร่วม Jam</string>
+    <string name="spotify_jam_card_desc">วางลิงก์ Jam ของเพื่อน</string>
+    <string name="spotify_jam_dialog_title">เข้าร่วม Spotify Jam</string>
+    <string name="spotify_jam_hint">ลิงก์ Jam</string>
+    <string name="spotify_jam_help">วางลิงก์ที่โฮสต์แชร์ คิวจะถูกบันทึกเป็นเพลย์ลิสต์และค้นหาบน YouTube</string>
+    <string name="spotify_jam_join">เข้าร่วม</string>
+    <string name="spotify_jam_done">บันทึก Jam แล้ว: %1$d เพลง</string>
+    <string name="spotify_jam_hidden">Jam นี้ไม่เปิดเผยคิวหากไม่ได้เข้าสู่ระบบ Spotify โปรดขอให้โฮสต์แชร์คิวเป็นเพลย์ลิสต์แล้วนำเข้าที่นี่</string>
+</resources>

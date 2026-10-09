@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="import_from_spotify">Importar do Spotify</string>
+    <string name="playlist_import_error">Falha na importação: %1$s</string>
+    <string name="spotify_playlist_url">URL ou ID da playlist do Spotify</string>
+    <string name="spotify_import_searching">Procurando músicas no YouTube Music…</string>
+    <string name="spotify_import_done">Importação concluída: %1$d de %2$d músicas encontradas</string>
+    <string name="spotify_import_invalid_url">URL do Spotify inválida</string>
+    <string name="spotify_hub_title">Spotify</string>
+    <string name="spotify_import_card_desc">Traga suas playlists com um link</string>
+    <string name="spotify_jam_card_title">Entrar em uma Jam</string>
+    <string name="spotify_jam_card_desc">Cole o link da Jam de um amigo</string>
+    <string name="spotify_jam_dialog_title">Entrar em uma Jam do Spotify</string>
+    <string name="spotify_jam_hint">Link da Jam</string>
+    <string name="spotify_jam_help">Cole o link compartilhado pelo anfitrião. A fila é salva como playlist e buscada no YouTube.</string>
+    <string name="spotify_jam_join">Entrar</string>
+    <string name="spotify_jam_done">Jam salva: %1$d músicas</string>
+    <string name="spotify_jam_hidden">Esta Jam não expõe a fila sem login no Spotify. Peça ao anfitrião para compartilhar a fila como playlist e importe aqui.</string>
+</resources>

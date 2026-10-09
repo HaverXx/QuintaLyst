@@ -1,5 +1,6 @@
 package com.metrolist.music.ui.screens.settings
 
+import com.metrolist.music.ui.component.GlassCard
 import android.content.res.Configuration
 import android.os.Build
 import androidx.compose.animation.AnimatedVisibility
@@ -294,7 +295,7 @@ fun ThemeControls(
     selectedThemeColor: Color,
     onSelectedThemeColorChange: (Color) -> Unit
 ) {
-    Card(
+    GlassCard(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp),

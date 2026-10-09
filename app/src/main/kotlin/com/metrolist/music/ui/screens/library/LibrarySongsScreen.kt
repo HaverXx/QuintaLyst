@@ -5,6 +5,7 @@
 
 package com.metrolist.music.ui.screens.library
 
+import com.metrolist.music.ui.component.GlassFilterChip
 import android.net.Uri
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -332,9 +333,9 @@ fun LibrarySongsScreen(
                 key = "filter",
                 contentType = CONTENT_TYPE_HEADER,
             ) {
-                Row {
+                Row(modifier = Modifier.padding(top = 14.dp)) {
                     Spacer(Modifier.width(12.dp))
-                    FilterChip(
+                    GlassFilterChip(
                         label = { Text(stringResource(R.string.songs)) },
                         selected = true,
                         colors = FilterChipDefaults.filterChipColors(containerColor = MaterialTheme.colorScheme.surface),
