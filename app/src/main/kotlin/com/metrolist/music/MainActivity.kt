@@ -843,12 +843,12 @@ class MainActivity : FragmentActivity() {
                     pureBlack = pureBlack,
                     intensity = dynamicBgIntensity,
                     speed = dynamicBgSpeed,
-                    enabled = dynamicBackground && !retroStyle,
+                    enabled = dynamicBackground,
                     paused = onLoginRoute,
                     style = dynamicBgStyle,
                     thumbnailUrl = currentSongThumbnailUrl,
                     coverBlur = dynamicBgBlur,
-                    solidColor = if (retroStyle) RetroPalette.Screen else appSolidColor,
+                    solidColor = appSolidColor,
                     albumOpacity = albumBgOpacity,
                     modifier = Modifier.fillMaxSize()
                 ) {
@@ -863,15 +863,14 @@ class MainActivity : FragmentActivity() {
                     val useRandomWallpaper = randomWallpaperActive && randomSlotSource != null
                     val wallpaperBackdrop = rememberLiquidBackdrop()
                     val hasWallpaper =
-                        !retroStyle &&
-                            !onLoginRoute &&
+                        !onLoginRoute &&
                             appBgMode == com.metrolist.music.constants.AppBackgroundMode.CUSTOM &&
                             (
                                 useRandomWallpaper ||
                                     (!randomWallpaperActive && wallpaperPath.isNotBlank() && java.io.File(wallpaperPath).exists())
                             )
                     Box(modifier = Modifier.fillMaxSize()) {
-                    if (retroStyle) {
+                    if (retroStyle && appBgMode == com.metrolist.music.constants.AppBackgroundMode.SOLID && appSolidColor == null) {
                         RetroTvBackground(modifier = Modifier.fillMaxSize())
                     }
                     if (hasWallpaper) {

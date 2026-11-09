@@ -912,7 +912,7 @@ fun BottomSheetPlayer(
         backgroundFollowsSheet = playerBackdrop != null,
         collapsedCornerRadius = 0.dp,
         background = bg@{
-            if (retro) {
+            if (retro && !isDynamicMeshActive && playerBackground == PlayerBackgroundStyle.DEFAULT) {
                 RetroTvBackground(modifier = Modifier.fillMaxSize())
                 return@bg
             }

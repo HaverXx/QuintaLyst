@@ -71,6 +71,7 @@ val UseNewMiniPlayerDesignKey = booleanPreferencesKey("useNewMiniPlayerDesign")
 val LiquidGlassKey = booleanPreferencesKey("liquidGlass")
 val RetroStyleKey = booleanPreferencesKey("retroStyle")
 val RetroDynamicLabelKey = booleanPreferencesKey("retroDynamicLabel")
+val RetroLabelCoverKey = booleanPreferencesKey("retroLabelCover")
 /** Opacidad (0.1..1) de las capas de color del cristal de la pestaña "Reproduciendo". */
 val PlayerGlassOpacityKey = floatPreferencesKey("playerGlassOpacity")
 /** Oscurecimiento (0..1) de la barra del mini reproductor para mejorar la legibilidad. 0 = diseño original. */

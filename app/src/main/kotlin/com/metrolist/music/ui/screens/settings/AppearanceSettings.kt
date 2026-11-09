@@ -85,6 +85,7 @@ import com.metrolist.music.constants.HideStatusBarOnFullscreenKey
 import com.metrolist.music.constants.LibraryFilter
 import com.metrolist.music.constants.LiquidGlassKey
 import com.metrolist.music.constants.RetroDynamicLabelKey
+import com.metrolist.music.constants.RetroLabelCoverKey
 import com.metrolist.music.constants.RetroStyleKey
 import com.metrolist.music.constants.PlayerGlassOpacityKey
 import com.metrolist.music.constants.ListenTogetherInTopBarKey
@@ -275,6 +276,11 @@ fun AppearanceSettings(
     val (retroDynamicLabel, onRetroDynamicLabelChange) =
         rememberPreference(
             RetroDynamicLabelKey,
+            defaultValue = true,
+        )
+    val (retroLabelCover, onRetroLabelCoverChange) =
+        rememberPreference(
+            RetroLabelCoverKey,
             defaultValue = true,
         )
     val appStyle = if (retroStyle) 2 else if (liquidGlass) 1 else 0
@@ -1582,6 +1588,30 @@ fun AppearanceSettings(
                                     )
                                 },
                                 onClick = { onRetroDynamicLabelChange(!retroDynamicLabel) },
+                            ),
+                        )
+                        add(
+                            Material3SettingsItem(
+                                icon = painterResource(R.drawable.nav_bar),
+                                title = { Text(stringResource(R.string.retro_label_cover)) },
+                                description = { Text(stringResource(R.string.retro_label_cover_desc)) },
+                                trailingContent = {
+                                    Switch(
+                                        checked = retroLabelCover,
+                                        onCheckedChange = onRetroLabelCoverChange,
+                                        thumbContent = {
+                                            Icon(
+                                                painter =
+                                                    painterResource(
+                                                        id = if (retroLabelCover) R.drawable.check else R.drawable.close,
+                                                    ),
+                                                contentDescription = null,
+                                                modifier = Modifier.size(SwitchDefaults.IconSize),
+                                            )
+                                        },
+                                    )
+                                },
+                                onClick = { onRetroLabelCoverChange(!retroLabelCover) },
                             ),
                         )
                     }

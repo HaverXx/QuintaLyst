@@ -1,0 +1,28 @@
+// !$*UTF8*$!
+{
+ archiveVersion = 1; classes = {}; objectVersion = 56;
+ objects = {
+  A10000000000000000000001 = {isa = PBXProject; attributes = {BuildIndependentTargetsInParallel = 1; LastUpgradeCheck = 1600; TargetAttributes = {A10000000000000000000002 = {CreatedOnToolsVersion = 16.0; }; }; }; buildConfigurationList = A10000000000000000000009; compatibilityVersion = "Xcode 14.0"; mainGroup = A10000000000000000000003; productRefGroup = A10000000000000000000004; projectDirPath = ""; projectRoot = ""; targets = (A10000000000000000000002, ); };
+  A10000000000000000000002 = {isa = PBXNativeTarget; buildConfigurationList = A1000000000000000000000A; buildPhases = (A10000000000000000000015, A10000000000000000000006, A10000000000000000000005, A10000000000000000000007, ); buildRules = (); dependencies = (); name = Quintalyst; productName = Quintalyst; productReference = A10000000000000000000008; productType = "com.apple.product-type.application"; };
+  A10000000000000000000003 = {isa = PBXGroup; children = (A1000000000000000000000B, A10000000000000000000011, A10000000000000000000004, ); sourceTree = "<group>"; };
+  A10000000000000000000004 = {isa = PBXGroup; children = (A10000000000000000000008, ); name = Products; sourceTree = "<group>"; };
+  A10000000000000000000005 = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (A1000000000000000000000D, ); runOnlyForDeploymentPostprocessing = 0; };
+  A10000000000000000000006 = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (A10000000000000000000012, ); runOnlyForDeploymentPostprocessing = 0; };
+  A10000000000000000000007 = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+  A10000000000000000000008 = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Quintalyst.app; sourceTree = BUILT_PRODUCTS_DIR; };
+  A10000000000000000000009 = {isa = XCConfigurationList; buildConfigurations = (A1000000000000000000000C, A1000000000000000000000E, ); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+  A1000000000000000000000A = {isa = XCConfigurationList; buildConfigurations = (A1000000000000000000000F, A10000000000000000000010, ); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+  A1000000000000000000000B = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Quintalyst/QuintalystApp.swift; sourceTree = "<group>"; };
+  A1000000000000000000000C = {isa = XCBuildConfiguration; buildSettings = {ALWAYS_SEARCH_USER_PATHS = NO; CLANG_ENABLE_MODULES = YES; CLANG_ENABLE_OBJC_ARC = YES; IPHONEOS_DEPLOYMENT_TARGET = 17.0; SDKROOT = iphoneos; SWIFT_VERSION = 5.0; }; name = Debug; };
+  A1000000000000000000000E = {isa = XCBuildConfiguration; buildSettings = {ALWAYS_SEARCH_USER_PATHS = NO; CLANG_ENABLE_MODULES = YES; CLANG_ENABLE_OBJC_ARC = YES; IPHONEOS_DEPLOYMENT_TARGET = 17.0; SDKROOT = iphoneos; SWIFT_VERSION = 5.0; }; name = Release; };
+  A1000000000000000000000F = {isa = XCBuildConfiguration; buildSettings = {FRAMEWORK_SEARCH_PATHS = "$(inherited) $(SRCROOT)/shared/build/xcode-frameworks/$(CONFIGURATION)/$(SDK_NAME)"; INFOPLIST_FILE = Quintalyst/Info.plist; GENERATE_INFOPLIST_FILE = YES; INFOPLIST_KEY_CFBundleDisplayName = Quintalyst; INFOPLIST_KEY_UILaunchScreen_Generation = YES; IPHONEOS_DEPLOYMENT_TARGET = 17.0; OTHER_LDFLAGS = "$(inherited) -framework QuintalystShared"; PRODUCT_BUNDLE_IDENTIFIER = com.quintalyst.iphone; PRODUCT_NAME = "$(TARGET_NAME)"; SDKROOT = iphoneos; SWIFT_EMIT_LOC_STRINGS = YES; SWIFT_VERSION = 5.0; TARGETED_DEVICE_FAMILY = "1,2"; }; name = Debug; };
+  A10000000000000000000010 = {isa = XCBuildConfiguration; buildSettings = {FRAMEWORK_SEARCH_PATHS = "$(inherited) $(SRCROOT)/shared/build/xcode-frameworks/$(CONFIGURATION)/$(SDK_NAME)"; INFOPLIST_FILE = Quintalyst/Info.plist; GENERATE_INFOPLIST_FILE = YES; INFOPLIST_KEY_CFBundleDisplayName = Quintalyst; INFOPLIST_KEY_UILaunchScreen_Generation = YES; IPHONEOS_DEPLOYMENT_TARGET = 17.0; OTHER_LDFLAGS = "$(inherited) -framework QuintalystShared"; PRODUCT_BUNDLE_IDENTIFIER = com.quintalyst.iphone; PRODUCT_NAME = "$(TARGET_NAME)"; SDKROOT = iphoneos; SWIFT_EMIT_LOC_STRINGS = YES; SWIFT_VERSION = 5.0; TARGETED_DEVICE_FAMILY = "1,2"; }; name = Release; };
+  A10000000000000000000011 = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuintalystShared.framework; path = "shared/build/xcode-frameworks/$(CONFIGURATION)/$(SDK_NAME)/QuintalystShared.framework"; sourceTree = SOURCE_ROOT; };
+  A10000000000000000000012 = {isa = PBXBuildFile; fileRef = A10000000000000000000011; };
+  A1000000000000000000000D = {isa = PBXBuildFile; fileRef = A1000000000000000000000B; };
+  A10000000000000000000015 = {isa = PBXShellScriptBuildPhase; buildActionMask = 2147483647; files = (); inputPaths = (); name = "Build Quintalyst Kotlin framework"; outputPaths = (); runOnlyForDeploymentPostprocessing = 0; shellPath = /bin/sh; shellScript = "cd \"$SRCROOT/..\"\n./gradlew -p ios/shared embedAndSignAppleFrameworkForXcode\n"; };
+ };
+ rootObject = A10000000000000000000001;
+}
+
+

@@ -78,6 +78,7 @@ import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
@@ -88,9 +89,11 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import coil3.compose.AsyncImage
 import com.metrolist.music.LocalListenTogetherManager
 import com.metrolist.music.LocalPlayerConnection
 import com.metrolist.music.R
+import com.metrolist.music.constants.RetroLabelCoverKey
 import com.metrolist.music.constants.SwipeSensitivityKey
 import com.metrolist.music.constants.SwipeThumbnailKey
 import com.metrolist.music.playback.audio.AudioLevelMeter
@@ -517,6 +520,7 @@ fun RetroMiniPlayer(modifier: Modifier = Modifier) {
                 width = cassetteWidth,
                 title = mediaMetadata?.title.orEmpty(),
                 artist = mediaMetadata?.artists?.joinToString { it.name }.orEmpty(),
+                coverUrl = mediaMetadata?.thumbnailUrl,
                 tape = { tape.floatValue },
                 reelAngle = { angle.floatValue },
             )
@@ -543,6 +547,7 @@ fun RetroCassette(
     width: Dp,
     title: String,
     artist: String,
+    coverUrl: String?,
     tape: () -> Float,
     reelAngle: () -> Float,
     modifier: Modifier = Modifier,
@@ -552,9 +557,25 @@ fun RetroCassette(
     val titleSize = with(density) { (width * 0.062f).toSp() }
     val artistSize = with(density) { (width * 0.047f).toSp() }
     val accent = animateColorAsState(LocalRetroAccent.current, tween(600), label = "retroAccent")
+    val showCover by rememberPreference(RetroLabelCoverKey, true)
+    val withCover = showCover && coverUrl != null
+    val textStart = if (withCover) 0.26f else 0.10f
     Box(modifier = modifier.size(width, height)) {
-        Canvas(modifier = Modifier.fillMaxSize()) { drawCassette(tape(), reelAngle(), accent.value) }
-        Column(modifier = Modifier.offset(x = width * 0.10f, y = height * 0.15f).width(width * 0.80f)) {
+        Canvas(modifier = Modifier.fillMaxSize()) { drawCassette(tape(), reelAngle(), accent.value, textStart) }
+        if (withCover) {
+            AsyncImage(
+                model = coverUrl,
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier =
+                    Modifier
+                        .offset(x = width * 0.09f, y = height * 0.16f)
+                        .size(height * 0.23f)
+                        .clip(RoundedCornerShape(3.dp))
+                        .border(1.dp, RetroPalette.Ink.copy(alpha = 0.35f), RoundedCornerShape(3.dp)),
+            )
+        }
+        Column(modifier = Modifier.offset(x = width * textStart, y = height * 0.15f).width(width * (0.90f - textStart))) {
             Text(
                 text = title,
                 fontFamily = FontFamily.Cursive,
@@ -580,6 +601,7 @@ private fun DrawScope.drawCassette(
     tape: Float,
     angle: Float,
     accent: Color,
+    textStart: Float,
 ) {
     val w = size.width
     val h = size.height
@@ -602,8 +624,8 @@ private fun DrawScope.drawCassette(
         drawRect(accent, Offset(0f, h * 0.07f), Size(w, h * 0.065f))
         drawRect(lerp(accent, Color.Black, 0.35f), Offset(0f, h * 0.135f), Size(w, h * 0.012f))
         val ink = RetroPalette.Ink.copy(alpha = 0.22f)
-        drawLine(ink, Offset(w * 0.10f, h * 0.28f), Offset(w * 0.90f, h * 0.28f), w * 0.003f)
-        drawLine(ink, Offset(w * 0.10f, h * 0.38f), Offset(w * 0.90f, h * 0.38f), w * 0.003f)
+        drawLine(ink, Offset(w * textStart, h * 0.28f), Offset(w * 0.90f, h * 0.28f), w * 0.003f)
+        drawLine(ink, Offset(w * textStart, h * 0.38f), Offset(w * 0.90f, h * 0.38f), w * 0.003f)
     }
     val windowLeft = w * 0.20f
     val windowTop = h * 0.40f
@@ -706,6 +728,7 @@ fun RetroBoombox(modifier: Modifier = Modifier) {
                     width = windowWidth * 0.96f,
                     title = mediaMetadata?.title.orEmpty(),
                     artist = mediaMetadata?.artists?.joinToString { it.name }.orEmpty(),
+                coverUrl = mediaMetadata?.thumbnailUrl,
                     tape = { tape.floatValue },
                     reelAngle = { angle.floatValue },
                     modifier =

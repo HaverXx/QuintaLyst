@@ -102,6 +102,8 @@
     <string name="app_style">App style</string>
     <string name="app_style_original">Original</string>
     <string name="app_style_original_desc">The standard app look, without Liquid Glass or the retro style.</string>
+    <string name="retro_label_cover">Album cover on the label</string>
+    <string name="retro_label_cover_desc">Shows the album cover on the cassette label, below the colored stripe.</string>
     <string name="retro_label_dynamic">Dynamic cassette label</string>
     <string name="retro_label_dynamic_desc">The cassette label color follows the song that is playing.</string>
     <string name="retro_style">Retro cassette style</string>
