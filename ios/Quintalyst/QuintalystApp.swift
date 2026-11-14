@@ -134,9 +134,60 @@ struct PlayerView:View {
         VStack(spacing:22) { HStack {Image(systemName:"chevron.down").onTapGesture{dismiss()}; Spacer(); VStack(spacing:2){Text("PLAYING FROM").font(.caption2.bold()).tracking(1).foregroundStyle(.secondary);Text("Your Mix").font(.subheadline.bold())};Spacer();Image(systemName:"ellipsis")}.padding(.top,10)
         if lyrics { Spacer(); Image(systemName:"quote.opening").font(.largeTitle).foregroundStyle(style.accent); Text("Waiting in the summer rain\nFor the night to take us home").font(.title2.bold()).multilineTextAlignment(.center); Text("Lyrics preview").font(.caption).foregroundStyle(.secondary); Spacer() }
         else { if style.art && style.player != "Minimal" { Artwork(track:audio.current,radius:style.radius,size:0).aspectRatio(1,contentMode:.fit).padding(.horizontal,18).shadow(color:audio.current.colors[0].opacity(0.3),radius:28,y:15) }
-        HStack { VStack(alignment:.leading,spacing:4){Text(audio.current.title).font(.title2.bold()).lineLimit(1);Text(audio.current.artist).font(.title3).foregroundStyle(.secondary)};Spacer();Button{audio.liked.toggle()}{Image(systemName:audio.liked ? "heart.fill":"heart").font(.title2).foregroundStyle(audio.liked ? style.accent:Color.secondary)} }
+        HStack {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(audio.current.title).font(.title2.bold()).lineLimit(1)
+                Text(audio.current.artist).font(.title3).foregroundStyle(.secondary)
+            }
+            Spacer()
+            Button {
+                audio.liked.toggle()
+            } label: {
+                Image(systemName: audio.liked ? "heart.fill" : "heart")
+                    .font(.title2)
+                    .foregroundStyle(audio.liked ? style.accent : Color.secondary)
+            }
+        }
         VStack(spacing:2){Slider(value:Binding(get:{audio.progress},set:{audio.seek(to:$0)})).tint(style.accent);HStack{Text(clock(audio.duration*audio.progress));Spacer();Text("−"+clock(audio.duration*(1-audio.progress)))}.font(.caption2.monospacedDigit()).foregroundStyle(.secondary)}
-        HStack {Button{audio.shuffle.toggle()}{Image(systemName:"shuffle").foregroundStyle(audio.shuffle ? style.accent:Color.secondary)};Spacer();Button{audio.step(-1)}{Image(systemName:"backward.end.fill")};Spacer();Button{audio.toggle()}{Image(systemName:audio.playing ? "pause.fill":"play.fill").font(.title2.bold()).foregroundStyle(.black).frame(width:66,height:66).background(.white,in:Circle())};Spacer();Button{audio.step(1)}{Image(systemName:"forward.end.fill")};Spacer();Button{audio.repeatMode=(audio.repeatMode+1)%3}{Image(systemName:audio.repeatMode>0 ? "repeat.1":"repeat").foregroundStyle(audio.repeatMode>0 ? style.accent:Color.secondary)} }.font(.title3).foregroundStyle(.primary)
+        HStack {
+            Button {
+                audio.shuffle.toggle()
+            } label: {
+                Image(systemName: "shuffle")
+                    .foregroundStyle(audio.shuffle ? style.accent : Color.secondary)
+            }
+            Spacer()
+            Button {
+                audio.step(-1)
+            } label: {
+                Image(systemName: "backward.end.fill")
+            }
+            Spacer()
+            Button {
+                audio.toggle()
+            } label: {
+                Image(systemName: audio.playing ? "pause.fill" : "play.fill")
+                    .font(.title2.bold())
+                    .foregroundStyle(.black)
+                    .frame(width: 66, height: 66)
+                    .background(.white, in: Circle())
+            }
+            Spacer()
+            Button {
+                audio.step(1)
+            } label: {
+                Image(systemName: "forward.end.fill")
+            }
+            Spacer()
+            Button {
+                audio.repeatMode = (audio.repeatMode + 1) % 3
+            } label: {
+                Image(systemName: audio.repeatMode > 0 ? "repeat.1" : "repeat")
+                    .foregroundStyle(audio.repeatMode > 0 ? style.accent : Color.secondary)
+            }
+        }
+        .font(.title3)
+        .foregroundStyle(.primary)
         if let error=audio.error { Text(error).font(.footnote).foregroundStyle(.red).lineLimit(2) }; HStack {Label("AirPlay",systemImage:"airplayaudio");Spacer();Image(systemName:"list.bullet");Image(systemName:"quote.bubble").onTapGesture{lyrics=true}}.font(.subheadline).foregroundStyle(.secondary) }
         HStack {Button("Now Playing"){lyrics=false};Button("Lyrics"){lyrics=true}}.font(.caption.bold()).foregroundStyle(style.accent).padding(.bottom,8)
         }.padding(.horizontal,26)
@@ -169,7 +220,51 @@ struct StylePreviewView:View {
 
 struct MiniPlayer:View {
     @EnvironmentObject var style:StyleStore;@EnvironmentObject var audio:PlayerStore;let action:()->Void
-    var body:some View {HStack(spacing:10){if style.art && style.mini != "Compact"{Artwork(track:audio.current,radius:min(style.radius,11),size:42)};VStack(alignment:.leading,spacing:3){Text(audio.current.title).font(.subheadline.bold()).lineLimit(1);Text(audio.current.artist).font(.caption).foregroundStyle(.secondary).lineLimit(1)};Spacer(minLength:3);Button{audio.toggle()}{Image(systemName:audio.playing ? "pause.fill":"play.fill").foregroundStyle(.primary).frame(width:35,height:40)};Button{audio.step(1)}{Image(systemName:"forward.end.fill").foregroundStyle(.primary).frame(width:30,height:40)}}.padding(style.mini == "Compact" ? 5 : 8).background(style.mini == "Glass" ? AnyShapeStyle(.ultraThinMaterial) : AnyShapeStyle(style.mini == "Artwork tint" ? audio.current.colors[0].opacity(0.28) : Color(uiColor:.secondarySystemBackground)),in:RoundedRectangle(cornerRadius:17)).overlay(alignment:.bottomLeading){GeometryReader{g in Capsule().fill(style.accent).frame(width:g.size.width*audio.progress,height:2)}.padding(.horizontal,12)}.contentShape(Rectangle()).onTapGesture(perform:action)}
+    var body: some View {
+        HStack(spacing: 10) {
+            if style.art && style.mini != "Compact" {
+                Artwork(track: audio.current, radius: min(style.radius, 11), size: 42)
+            }
+            VStack(alignment: .leading, spacing: 3) {
+                Text(audio.current.title).font(.subheadline.bold()).lineLimit(1)
+                Text(audio.current.artist).font(.caption).foregroundStyle(.secondary).lineLimit(1)
+            }
+            Spacer(minLength: 3)
+            Button {
+                audio.toggle()
+            } label: {
+                Image(systemName: audio.playing ? "pause.fill" : "play.fill")
+                    .foregroundStyle(.primary)
+                    .frame(width: 35, height: 40)
+            }
+            Button {
+                audio.step(1)
+            } label: {
+                Image(systemName: "forward.end.fill")
+                    .foregroundStyle(.primary)
+                    .frame(width: 30, height: 40)
+            }
+        }
+        .padding(style.mini == "Compact" ? 5 : 8)
+        .background(
+            style.mini == "Glass"
+                ? AnyShapeStyle(.ultraThinMaterial)
+                : AnyShapeStyle(style.mini == "Artwork tint"
+                    ? audio.current.colors[0].opacity(0.28)
+                    : Color(uiColor: .secondarySystemBackground)),
+            in: RoundedRectangle(cornerRadius: 17)
+        )
+        .overlay(alignment: .bottomLeading) {
+            GeometryReader { geometry in
+                Capsule()
+                    .fill(style.accent)
+                    .frame(width: geometry.size.width * audio.progress, height: 2)
+            }
+            .padding(.horizontal, 12)
+        }
+        .contentShape(Rectangle())
+        .onTapGesture(perform: action)
+    }
 }
 struct TabBar:View {
     @EnvironmentObject var style:StyleStore;@Binding var selection:Int
@@ -247,7 +342,39 @@ struct YouTubeLoginWebView:UIViewRepresentable {
     final class Coordinator:NSObject,WKNavigationDelegate {
         let onSession:(YouTubeSession)->Void;var delivered=false
         init(onSession:@escaping(YouTubeSession)->Void){self.onSession=onSession}
-        func webView(_ webView:WKWebView,didFinish navigation:WKNavigation!){guard !delivered else{return};let script="""(()=>{const c=window.yt&&window.yt.config_||{};return JSON.stringify({visitorData:c.VISITOR_DATA||'',dataSyncId:String(c.DATASYNC_ID||'').split('||')[0],authUser:String(c.SESSION_INDEX||'0')})})()""";webView.evaluateJavaScript(script){[weak self] result,_ in guard let self,let text=result as? String,let data=text.data(using:.utf8),let auth=try? JSONSerialization.jsonObject(with:data) as? [String:String] else{return};webView.configuration.websiteDataStore.httpCookieStore.getAllCookies{cookies in let cookie=cookies.filter{$0.domain.contains("youtube.com")}.map{"\($0.name)=\($0.value)"}.joined(separator:"; ");guard cookie.contains("SAPISID="),let visitor=auth["visitorData"],!visitor.isEmpty else{return};let session=YouTubeSession(cookie:cookie,visitorData:visitor,dataSyncId:auth["dataSyncId"] ?? "",authUser:auth["authUser"] ?? "0");self.delivered=true;DispatchQueue.main.async{self.onSession(session)}}}}
+        func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+            guard !delivered else { return }
+            let script = #"(()=>{const c=window.yt&&window.yt.config_||{};return JSON.stringify({visitorData:c.VISITOR_DATA||'',dataSyncId:String(c.DATASYNC_ID||'').split('||')[0],authUser:String(c.SESSION_INDEX||'0')})})()"#
+            webView.evaluateJavaScript(script) { [weak self] result, _ in
+                guard let self,
+                      let text = result as? String,
+                      let data = text.data(using: .utf8),
+                      let auth = try? JSONSerialization.jsonObject(with: data) as? [String: String]
+                else { return }
+
+                webView.configuration.websiteDataStore.httpCookieStore.getAllCookies { cookies in
+                    let cookie = cookies
+                        .filter { $0.domain.contains("youtube.com") }
+                        .map { "\($0.name)=\($0.value)" }
+                        .joined(separator: "; ")
+                    guard cookie.contains("SAPISID="),
+                          let visitor = auth["visitorData"],
+                          !visitor.isEmpty
+                    else { return }
+
+                    let session = YouTubeSession(
+                        cookie: cookie,
+                        visitorData: visitor,
+                        dataSyncId: auth["dataSyncId"] ?? "",
+                        authUser: auth["authUser"] ?? "0"
+                    )
+                    self.delivered = true
+                    DispatchQueue.main.async {
+                        self.onSession(session)
+                    }
+                }
+            }
+        }
     }
 }
 
