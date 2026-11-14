@@ -10,6 +10,10 @@ kotlin {
         binaries.framework {
             baseName = "QuintalystShared"
             isStatic = true
+
+            if (buildType == org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType.RELEASE) {
+                freeCompilerArgs += "-Xdisable-phases=DevirtualizationAnalysis"
+            }
         }
     }
 
